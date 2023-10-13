@@ -1,62 +1,73 @@
-from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex, QSize
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableView, QSizePolicy
+import sys
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QHeaderView
 
-class MyTableModel(QAbstractTableModel):
-    def __init__(self, data, headers):
-        super().__init__()
-        self._data = data
-        self._headers = headers
-
-    def rowCount(self, parent=QModelIndex()):
-        return len(self._data)
-
-    def columnCount(self, parent=QModelIndex()):
-        return len(self._data[0])
-
-    def data(self, index, role):
-        if role == Qt.ItemDataRole.DisplayRole:
-            return self._data[index.row()][index.column()]
-
-    def headerData(self, section, orientation, role):
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return self._headers[section]
-
-class MyTableWidget(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('TableRTU')
 
-        layout = QVBoxLayout()
+        self.setWindowTitle("IEC-870-5 Unbalanced Mode")
+        self.setGeometry(100, 100, 1000, 600)
 
-        self.table = QTableView()
+        central_widget = QWidget(self)
+        self.setCentralWidget(central_widget)
 
-        headers = ["UTR", "Code", "Logic", "Link", "Local", "Unidade", "Cota", "Eixo", "", "UTR", "Code", "Logic", "Link", "Local", "Unidade", "Cota", "Eixo"]
-        data = [
-            ["UTR501", "A01R01", "1", "1", "CF", "U1", "108", "C-D","","UTR520", "C45A01", "20", "19", "GIS", "U2", "124", "A-B"],
-            ["UTR502", "A02R01", "2", "2", "CF", "U2", "108", "C-D","","UTR520-1", "C45A02", "21", "20", "GIS", "U3", "124", "A-B"],
-            # Adicione mais linhas de dados aqui
-        ]
+        layout = QVBoxLayout(central_widget)
 
-        self.model = MyTableModel(data, headers)
-        self.table.setModel(self.model)
+        self.create_section("SOSTAT", layout)
+        self.create_section("Conversor BitByte <-> PTNO", layout)
+        self.create_section("Localização/código de cores dos cabos", layout)
 
+        self.create_table(layout)
+
+    def create_section(self, title, layout):
+        label = QLabel(title)
+        layout.addWidget(label)
+
+        if title == "Conversor BitByte <-> PTNO":
+            self.entry_bitbyte = self.create_input(layout)
+            self.create_button("Calcular PTNO", self.calculate_ptno, layout)
+            self.entry_ptno = self.create_input(layout)
+            self.create_button("Calcular Bit...", self.calculate_bitbyte, layout)
+        elif title == "Localização/código de cores dos cabos":
+            self.create_button("Localização das UTRs", self.display_tablertu, layout)
+            self.create_button("Código e Cores dos Cabos de UTRs", self.display_codigos_cores, layout)
+
+    def create_input(self, layout):
+        entry = QLineEdit()
+        layout.addWidget(entry)
+        return entry
+
+    def create_button(self, text, callback, layout):
+        btn = QPushButton(text)
+        layout.addWidget(btn)
+        btn.clicked.connect(callback)
+
+    def create_table(self, layout):
+        self.table = QTableWidget()
         layout.addWidget(self.table)
+        self.table.setColumnCount(17)
+        self.table.setHorizontalHeaderLabels(["UTR", "Code", "Logic", "Link", "Local", "Unidade", "Cota", "Eixo"])
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        self.setLayout(layout)
+    def calculate_ptno(self):
+        # Implemente a lógica de cálculo para PTNO aqui
+        pass
 
-        # Personalização adicional do layout e estilo da tabela
-        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.table.setSortingEnabled(True)
-        self.resize(QSize(890, 585))
+    def calculate_bitbyte(self):
+        # Implemente a lógica de cálculo para BitByte aqui
+        pass
+
+    def display_tablertu(self):
+        # Esta função será chamada quando o botão "Localização das UTRs" for pressionado
+        pass
+
+    def display_codigos_cores(self):
+        # Esta função exibirá a tabela com os códigos de cores
+        pass
 
 if __name__ == '__main__':
-    app = QApplication([])
-    app.setStyle('Fusion')
-
-    table_view = MyTableWidget()
-    table_view.show()
-
-    app.exec()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
