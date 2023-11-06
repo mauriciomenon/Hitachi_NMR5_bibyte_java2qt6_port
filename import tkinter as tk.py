@@ -23,6 +23,7 @@ app.title("IEC-870-5 Unbalanced Mode")
 frame_principal = ttk.Frame(app)
 frame_principal.pack(padx=10, pady=10)
 
+
 # Seção de Conversor BitByte <-> PTNO
 label_sostat = ttk.Label(frame_principal, text="SOSTAT")
 label_sostat.grid(row=0, column=0, sticky="w", pady=(0, 10))
