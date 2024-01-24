@@ -24,9 +24,7 @@ class App(QMainWindow):
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-
-        layout = QVBoxLayout()
-        central_widget.setLayout(layout)
+        layout = QVBoxLayout(central_widget)
 
         # Seção de Conversor BitByte <-> PTNO
         sostat_label = QLabel("SOSTAT")
@@ -38,20 +36,24 @@ class App(QMainWindow):
         self.entry_bitbyte = QLineEdit()
         layout.addWidget(self.entry_bitbyte)
 
-        # Botões de cálculo e suas conexões
+        buttons_layout = QHBoxLayout()  # Botões de cálculo
+
         calcular_ptno_button = QPushButton("Calcular PTNO")
         calcular_ptno_button.clicked.connect(self.calcula_1)
-        layout.addWidget(calcular_ptno_button)
+        buttons_layout.addWidget(calcular_ptno_button)
 
         calcular_bit_button = QPushButton("Calcular Bit...")
         calcular_bit_button.clicked.connect(self.calcula_2)
-        layout.addWidget(calcular_bit_button)
+        buttons_layout.addWidget(calcular_bit_button)
 
-        # self.entry_ptno = (
-        #    QLineEdit()
-        # )  # Cria o campo de texto para exibir o resultado do cálculo PTNO
-        # layout.addWidget(self.entry_ptno)  # Adiciona o campo de text
-        # mudança para usar somente uma caixa de resultado
+        layout.addLayout(buttons_layout)
+
+        # central_widget.setLayout(layout)    # layout resultado
+        # central_widget = QWidget()
+        # self.setCentralWidget(central_widget)
+        # layout = QVBoxLayout()
+        # central_widget.setLayout(layout)  # Layout horizontal para os botões
+
         self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
         self.entry_ptno_bitbyte_resultbox.setReadOnly(True)
         self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
