@@ -128,8 +128,8 @@ class App(QMainWindow):
 
     def calculo_1_logica(self, n1):
         result = 0
-        # message = "?"
-        # title = "Resultado"
+        message = "Não definido"
+        title = "Erro"
 
         if 0 <= n1 <= 2047:
             result = n1
