@@ -49,12 +49,6 @@ class App(QMainWindow):
 
         layout.addLayout(buttons_layout)
 
-        # central_widget.setLayout(layout)    # layout resultado
-        # central_widget = QWidget()
-        # self.setCentralWidget(central_widget)
-        # layout = QVBoxLayout()
-        # central_widget.setLayout(layout)  # Layout horizontal para os botões
-
         self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
         self.entry_ptno_bitbyte_resultbox.setReadOnly(True)
         self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
