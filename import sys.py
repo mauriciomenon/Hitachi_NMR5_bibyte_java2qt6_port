@@ -93,6 +93,11 @@ class App(QMainWindow):
         )
         self.add_table_data()
         self.create_button("Procurar Geral", self.procurar_geral, layout)
+        
+        # segunda tabela
+        # TODO
+        
+        # deixar mazimizado
         self.showMaximized()
 
 
