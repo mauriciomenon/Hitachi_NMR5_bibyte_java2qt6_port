@@ -18,16 +18,17 @@ from PyQt6.QtCore import Qt
 
 
 class App(QMainWindow):
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("IEC-870-5 Unbalanced Mode")
-        self.setGeometry(100, 100, 800, 600)
+        #self.setGeometry(100, 100, 800, 600)
 
+        
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        # Seção de Conversor BitByte <-> PTNO
         sostat_label = QLabel("SOSTAT")
         layout.addWidget(sostat_label)
 
@@ -37,8 +38,7 @@ class App(QMainWindow):
         self.entry_bitbyte = QLineEdit()
         layout.addWidget(self.entry_bitbyte)
 
-        buttons_layout = QHBoxLayout()  # Botões de cálculo
-
+        buttons_layout = QHBoxLayout()
         calcular_ptno_button = QPushButton("Calcular PTNO")
         calcular_ptno_button.clicked.connect(self.calcula_1)
         buttons_layout.addWidget(calcular_ptno_button)
@@ -46,7 +46,6 @@ class App(QMainWindow):
         calcular_bit_button = QPushButton("Calcular Bit...")
         calcular_bit_button.clicked.connect(self.calcula_2)
         buttons_layout.addWidget(calcular_bit_button)
-
         layout.addLayout(buttons_layout)
 
         self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
@@ -58,7 +57,6 @@ class App(QMainWindow):
         limpar_button.clicked.connect(self.limpar_valores)
         layout.addWidget(limpar_button)
 
-        # Seção de Localização/código de cores dos cabos
         localizacao_label = QLabel("Localização/código de cores dos cabos")
         layout.addWidget(localizacao_label)
 
@@ -68,52 +66,35 @@ class App(QMainWindow):
         cod_cores_button = QPushButton("Código e Cores dos Cabos de UTRs")
         layout.addWidget(cod_cores_button)
 
-        # Tabela completa
-        self.table_frame = QWidget()
-        layout.addWidget(self.table_frame)
-        layout_table = QVBoxLayout()
-        self.table_frame.setLayout(layout_table)
-        # Inicialização da tabela
         self.table = QTableWidget()
-        self.table.setColumnCount(8)  # Defina o número correto de colunas
-        layout_table.addWidget(self.table)  # Adiciona a tabela ao layout da tabela
-        # Configuração dos rótulos do cabeçalho conforme os novos nomes de coluna
+        self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
             [
-                "UTR",
+                "Nome da UTR",
                 "Código SOM",
                 "Logic",
                 "Link",
-                "Local",
+                "Localização Física",
                 "Unidade",
-                "Cota",
-                "Eixo (CF)",
+                "Cota [m]",
+                "Eixo (Casa de Força)",
             ]
         )
-        # Habilita a ordenação
         self.table.setSortingEnabled(True)
+        layout.addWidget(
+            self.table
+        )  # Adiciona a tabela diretamente ao layout principal
 
-        # Adiciona dados à tabela
-        self.add_table_data()
-
-        # Ajusta a largura das colunas ao conteúdo
-        self.table.resizeColumnsToContents()
-
-        # Configura a política de redimensionamento para o cabeçalho horizontal
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)  # Corrigido
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
-        # Ajusta a tabela para expandir e preencher o espaço disponível
-        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.table.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        self.add_table_data()
+        self.create_button("Procurar Geral", self.procurar_geral, layout)
+        self.showMaximized()
 
-        # Botão Procurar Geral
-        self.create_button("Procurar Geral", self.procurar_geral, layout_table)
-
-
-    def onResize(self, event):
-        # Ajusta a largura das colunas ao conteúdo quando a janela é redimensionada
-        self.table.resizeColumnsToContents()
-        super(App, self).resizeEvent(event)
 
     def add_table_data(self):
         # Dados a serem inseridos na tabela
@@ -188,10 +169,12 @@ class App(QMainWindow):
         self.table.setRowCount(len(data))
 
         # Preenchimento da tabela com os dados
-        for row, rowData in enumerate(data):
-            for column, value in enumerate(rowData):
-                item = QTableWidgetItem(value)
-                self.table.setItem(row, column, item)
+    # Preenche a tabela com os dados
+        for row_index, row_data in enumerate(data):
+            for column_index, cell_data in enumerate(row_data):
+                self.table.setItem(
+                    row_index, column_index, QTableWidgetItem(str(cell_data))
+                )
 
     def create_button(self, text, function, layout):
         button = QPushButton(text)
