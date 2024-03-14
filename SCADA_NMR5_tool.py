@@ -85,15 +85,13 @@ class App(QMainWindow):
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents
         )
-        self.addTableData(self.table)
+        self.add_table_data()
         self.createButton("Procurar Geral", self.procurar_geral, layout)
 
     def setupSecondTable(self, layout):
         # Configuração da segunda tabela (Localização das UTRs)
         self.second_table = QTableWidget()
-        self.second_table.setColumnCount(
-            4
-        )  # Por exemplo, se a segunda tabela tiver 4 colunas
+        self.second_table.setColumnCount(4)
         self.second_table.setHorizontalHeaderLabels(
             ["Nome da UTR", "Localização", "Detalhes", "Observações"]
         )
@@ -105,9 +103,7 @@ class App(QMainWindow):
         self.second_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents
         )
-        self.addTableData(
-            self.second_table
-        )  # Você pode precisar de uma função diferente para preencher esta tabela
+        self.populate_second_table()
 
     def createButton(self, text, function, layout):
         button = QPushButton(text)
@@ -267,6 +263,7 @@ class App(QMainWindow):
             ["UTR540", "J61A07", "41", "38", "Barragem", "U3", "214", ""],
             ["UTR541", "J61A08", "42", "39", "Barragem", "U9", "144.5", ""],
             ["UTR640", "K61A06", "43", "40", "Barragem", "U13", "214", ""],
+            ["UTR641", "K61A07", "44", "41", "Barragem", "U16", "214", ""],
             ["UTR641", "K61A07", "44", "41", "Barragem", "U16", "214", ""],
             ["UTR501-1", "A01R02", "51", "43", "Casa de Força", "U01", "98", "A-B"],
             ["UTR502-1", "A02R02", "52", "44", "Casa de Força", "U02", "98", "A-B"],
