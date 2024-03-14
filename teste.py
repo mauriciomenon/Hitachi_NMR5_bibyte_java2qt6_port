@@ -134,8 +134,8 @@ class App(QMainWindow):
 
     def calculo_2_logica(self, n2):
         result = 0
-        # message = ""
-        # title = "Resultado"
+        message = "Mensagem padrão"  # Definindo um valor padrão
+        title = "Título padrão"  # Definindo um valor padrão
 
         if 0 <= n2 <= 2047:
             result = (n2 // 2) + 10000
