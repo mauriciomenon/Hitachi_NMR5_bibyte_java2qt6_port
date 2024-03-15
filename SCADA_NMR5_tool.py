@@ -27,19 +27,13 @@ class App(QMainWindow):
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        # Configurações iniciais (labels, botões, etc.)
         self.setupInitialComponents(layout)
-
-        # Configuração da tabela principal
         self.setupMainTable(layout)
-
-        # Configuração da segunda tabela (Localização das UTRs)
         self.setupSecondTable(layout)
 
         self.showMaximized()
 
     def setupInitialComponents(self, layout):
-        # Componentes como labels, lineEdits, e botões...
         layout.addWidget(QLabel("SOSTAT"))
         layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
 
@@ -62,19 +56,18 @@ class App(QMainWindow):
         self.createButton("Código e Cores dos Cabos de UTRs", lambda: None, layout)
 
     def setupMainTable(self, layout):
-        # Configuração da tabela principal
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
             [
-                "Nome da UTR",
-                "Código SOM",
+                "UTR",
+                "SOM",
                 "Logic",
                 "Link",
-                "Localização Física",
+                "Localização",
                 "Unidade",
                 "Cota [m]",
-                "Eixo (Casa de Força)",
+                "Eixo",
             ]
         )
         self.table.setSortingEnabled(True)
@@ -89,11 +82,17 @@ class App(QMainWindow):
         self.createButton("Procurar Geral", self.procurar_geral, layout)
 
     def setupSecondTable(self, layout):
-        # Configuração da segunda tabela (Localização das UTRs)
         self.second_table = QTableWidget()
-        self.second_table.setColumnCount(4)
+        self.second_table.setColumnCount(6)
         self.second_table.setHorizontalHeaderLabels(
-            ["Nome da UTR", "Localização", "Detalhes", "Observações"]
+            [
+                "Cor (Colorido)",
+                "Cor (P&B)",
+                "Par",
+                "Fio",
+                "Grupo Anilha",
+                "Cor da Anilha",
+            ]
         )
         self.second_table.setSortingEnabled(True)
         layout.addWidget(self.second_table)
@@ -113,12 +112,9 @@ class App(QMainWindow):
     def limpar_valores(self):
         self.entry_bitbyte.clear()
         self.entry_ptno_bitbyte_resultbox.setText("Resultado")
-        self.entry_ptno_bitbyte_resultbox.setAlignment(
-            Qt.AlignmentFlag.AlignCenter
-        )  # Re-centraliza o texto após limpeza
+        self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def procurar_geral(self):
-        # Lógica de pesquisa geral aqui
         search_text = self.entry_bitbyte.text().strip().lower()
         for row in range(self.table.rowCount()):
             for col in range(self.table.columnCount()):
@@ -126,102 +122,174 @@ class App(QMainWindow):
                 if item and search_text in item.text().strip().lower():
                     item.setSelected(True)
 
-    # Funções de cálculo
     def calcula_1(self):
         t1 = self.entry_bitbyte.text().strip()
         try:
             n1 = int(t1)
             result, message, title = self.calculo_1_logica(n1)
-            QMessageBox.information(self, title, message)
+            if message != "Erro":
+                QMessageBox.information(self, title, message)
             self.entry_ptno_bitbyte_resultbox.setText(str(result))
         except ValueError:
             QMessageBox.warning(
                 self, "Erro", "Entrada inválida. Por favor, insira um número válido."
             )
-
-    def calculo_1_logica(self, n1):
-        result = 0
-        message = "Não definido"
-        title = "Erro"
-
-        if 0 <= n1 <= 2047:
-            result = n1
-            message = (
-                "Calculadora para SOSTAT, verifique a SOANLG para pontos analógicos"
-            )
-            title = "Erro"
-        elif 10000 <= n1 <= 11023:
-            result = (n1 - 10000) * 2
-            message = "Resultado para um ponto 2WAY sem TimeStamp"
-        elif 15000 <= n1 <= 16023:
-            result = ((n1 - 15000) * 2) + 2048
-        elif 25000 <= n1 <= 25063:
-            result = (((n1 - 25000) // 8) * 16) + (((n1 - 25000) % 8) + 4608)
-        elif 36000 <= n1 <= 36063:
-            result = (((n1 - 36000) // 8) * 16) + (((n1 - 36000) % 8) + 5632)
-        elif 36088 <= n1 <= 36095:
-            result = (((n1 - 36064) // 8) * 16) + (((n1 - 36064) % 8) + 5760)
-            message = f"Resultado: {result}"
-        else:
-            message = "Verifique valores e intervalos válidos na documentação"
-            title = "Erro:"
-            result = 0
-        return result, message, title
 
     def calcula_2(self):
         t2 = self.entry_bitbyte.text().strip()
         try:
             n2 = int(t2)
             result, message, title = self.calculo_2_logica(n2)
-            QMessageBox.information(self, title, message)
-            # self.entry_bitbyte.setText(str(result))
+            if message != "Erro":
+                QMessageBox.information(self, title, message)
             self.entry_ptno_bitbyte_resultbox.setText(str(result))
         except ValueError:
             QMessageBox.warning(
                 self, "Erro", "Entrada inválida. Por favor, insira um número válido."
             )
 
-    def calculo_2_logica(self, n2):
-        result = 0
-        # message = ""
-        # title = "Resultado"
+    def calculo_1_logica(self, t1):
+        try:
+            n1 = int(t1)
+            result = 0
+            error = 0
+            message = "Erro"
+            title = "Erro"
 
-        if 0 <= n2 <= 2047:
-            result = (n2 // 2) + 10000
-            message = "Cuidado, pode ser ponto Analógico"
-        elif 2048 <= n2 <= 4095:
-            if n2 % 2 != 0:
-                message = "PTNO deve ser um número par"
-                title = "Erro"
+            if 0 <= n1 <= 36096:
+                if 0 <= n1 <= 2047:
+                    result = n1
+                    message = "Calculadora para SOSTAT, verifique a SOANLG para pontos analógicos"
+                elif 10000 <= n1 <= 11023:
+                    result = (n1 - 10000) * 2
+                    # message = "ponto 2WAY sem TimeStamp"
+                elif 15000 <= n1 <= 16023:
+                    result = ((n1 - 15000) * 2) + 2048
+                    # message = "ponto 2WAY com TimeStamp"
+                elif 25000 <= n1 <= 25063:
+                    result = (((n1 - 25000) // 8) * 16) + (((n1 - 25000) % 8) + 4608)
+                    # message = "ponto 4WAY com TimeStamp"
+                elif 36000 <= n1 <= 36063:
+                    result = (((n1 - 36000) // 8) * 16) + (((n1 - 36000) % 8) + 5632)
+                    # message = "ponto LATCH com TimeStamp"
+                elif 36088 <= n1 <= 36095:
+                    result = (((n1 - 36064) // 8) * 16) + (((n1 - 36064) % 8) + 5760)
+                    # message = "ponto LATCH com TimeStamp"
+
+                if (
+                    n1 in range(2048, 10000)
+                    or n1 in range(11024, 15000)
+                    or n1 in range(16024, 25000)
+                    or n1 in range(25064, 36000)
+                    or n1 in range(36064, 36088)
+                ):
+                    error = 1
+
             else:
-                result = (n2 + 27952) // 2
-        elif 4096 <= n2 <= 4607:
-            message = "Intervalo não utilizado"
-            title = "Erro"
-        elif 4608 <= n2 <= 5119:
-            message = "TBD resto"  # ... [restante da lógica de cálculo] ...
-            title = "TBD"
-        elif 5120 <= n2 <= 5631:
-            message = "Intervalo não utilizado"
-            title = "Erro"
-        elif 5632 <= n2 <= 6143:
-            message = "TBD resto"  # ... [restante da lógica de cálculo] ...
-            title = "TBD"
-        elif 6144 <= n2 <= 6999:
-            message = "Intervalo não utilizado"
-            title = "Erro"
-        elif 7000 <= n2 <= 8192:
+                error = 1
+
+            if error == 1:
+                message = "Verifique valores e intervalos válidos na documentação"
+                result = 0
+
+            return result, message, title
+
+        except ValueError:
+            return -1, "Entrada inválida", title
+
+    def calculo_2_logica(self, n2):
+        try:
+            n2 = int(n2)
             result = 0
-            message = "Todo Pseudo point tem BITBYTE nulo"
-            title = "Atenção"
-        else:
-            message = "Verifique valores e intervalos válidos na documentação"
-            title = "Erro:"
-            result = 0
-        return result, message, title
+            message = "Mensagem padrão"
+            title = "Título padrão"
+            error = 0
+
+            if 0 <= n2 <= 8192:
+                # message = "intervalo definido para SOSTAT.PTNO"
+                if 0 <= n2 <= 2047:
+                    result = (n2 // 2) + 10000
+                    message = "2WAY sem timestamp, verificar se é Analógico"
+                    # message = "2WAY sem TimeStamp"
+                elif 2048 <= n2 <= 4095:
+                    # message = "2WAY com TimeStamp"
+                    if n2 % 2 != 0:
+                        message = "PTNO deve ser um número par"
+                        title = "Erro"
+                        error = 1
+                    else:
+                        result = (n2 + 27952) // 2
+                elif 4096 <= n2 <= 4607:
+                    message = "Intervalo não utilizado"
+                    title = "Erro"
+                    error = 1
+                elif 4608 <= n2 <= 5119:
+                    # message = "4WAY com TimeStamp"
+                    adjustments = [
+                        (range(4608, 4616), 0),
+                        (range(4624, 4632), -8),
+                        (range(4640, 4648), -16),
+                        (range(4656, 4664), -24),
+                        (range(4672, 4680), -32),
+                        (range(4688, 4696), -40),
+                    ]
+                    for adjustment_range, offset in adjustments:
+                        if n2 in adjustment_range:
+                            result = n2 + 20392 + offset
+                            break
+                    else:
+                        if n2 >= 4696:
+                            message = "Intervalo não utilizado atualmente"
+                            title = "Erro"
+                elif 5120 <= n2 <= 5631:
+                    message = "Intervalo não utilizado"
+                    title = "Erro"
+                    error = 1
+                elif 5632 <= n2 <= 6143:
+                    # message = "Latch com TimeStamp"
+                    adjustments = [
+                        (range(5632, 5640), 0),
+                        (range(5648, 5656), -8),
+                        (range(5664, 5672), -16),
+                        (range(5680, 5688), -24),
+                        (range(5696, 5704), -32),
+                        (range(5712, 5720), -40),
+                        (range(5728, 5736), -48),
+                        (range(5744, 5752), -56),
+                        (range(5792, 5800), -80),
+                        (range(5808, 5816), -88),
+                    ]
+                    for adjustment_range, offset in adjustments:
+                        if n2 in adjustment_range:
+                            result = n2 + 30368 + offset
+                            break
+                    else:
+                        if n2 >= 5816:
+                            message = "Intervalo não utilizado atualmente"
+                            title = "Erro"
+                elif 6144 <= n2 <= 6999:
+                    message = "Intervalo não utilizado"
+                    title = "Erro"
+                    error = 1
+                elif 7000 <= n2 <= 8192:
+                    result = 0
+                    # message = "PseudoPoint"
+                    message = "Todo PseudoPoint tem BITBYTE nulo"
+                    title = "Atenção"
+            else:
+                error = 1
+
+            if error == 1:
+                message = "Verifique valores e intervalos válidos na documentação"
+                title = "Erro:"
+                result = 0
+
+            return result, message, title
+
+        except ValueError:
+            return -1, "Entrada inválida", "Erro"
 
     def add_table_data(self):
-        # Dados a serem inseridos na tabela
         data = [
             ["UTR501", "A01R01", "1", "1", "Casa de Força", "U01", "108", "C-D"],
             ["UTR502", "A02R01", "2", "2", "Casa de Força", "U02", "108", "C-D"],
@@ -290,14 +358,63 @@ class App(QMainWindow):
             ["UTR670-2", "T75A06", "87", "71", "Casa de Força", "U10", "131", "C-D"],
         ]
 
-        # Configuração do número de linhas com base nos dados
         self.table.setRowCount(len(data))
-
-        # Preenchimento da tabela com os dados
-        # Preenche a tabela com os dados
         for row_index, row_data in enumerate(data):
             for column_index, cell_data in enumerate(row_data):
                 self.table.setItem(
+                    row_index, column_index, QTableWidgetItem(str(cell_data))
+                )
+
+    def populate_second_table(self):
+        data = [
+            ["Azul", "Preto", "1", "11", "I", "Rosa"],
+            ["Vermelho", "Branco", "1", "12", "I", "Rosa"],
+            ["Cinza", "Preto", "2", "13", "I", "Rosa"],
+            ["Amarelo", "Branco", "2", "14", "I", "Rosa"],
+            ["Verde", "Preto", "3", "15", "I", "Rosa"],
+            ["Marrom", "Branco", "3", "16", "I", "Rosa"],
+            ["Preto", "Preto", "4", "17", "I", "Rosa"],
+            ["Branco", "Branco", "4", "18", "I", "Rosa"],
+            ["Ciano", "-", "-", "19", "I", "Rosa"],
+            ["Azul", "Preto", "5", "21", "II", "Rosa"],
+            ["Vermelho", "Branco", "5", "22", "II", "Rosa"],
+            ["Cinza", "Preto", "6", "23", "II", "Rosa"],
+            ["Amarelo", "Branco", "6", "24", "II", "Rosa"],
+            ["Verde", "Preto", "7", "25", "II", "Rosa"],
+            ["Marrom", "Branco", "7", "26", "II", "Rosa"],
+            ["Preto", "Preto", "8", "27", "II", "Rosa"],
+            ["Branco", "Branco", "8", "28", "II", "Rosa"],
+            ["Ciano", "-", "-", "29", "II", "Rosa"],
+            ["Azul", "Preto", "9", "31", "III", "Rosa"],
+            ["Vermelho", "Branco", "9", "32", "III", "Rosa"],
+            ["Cinza", "Preto", "10", "33", "III", "Rosa"],
+            ["Amarelo", "Branco", "10", "34", "III", "Rosa"],
+            ["Verde", "Preto", "11", "35", "III", "Rosa"],
+            ["Marrom", "Branco", "11", "36", "III", "Rosa"],
+            ["Preto", "Preto", "12", "37", "III", "Rosa"],
+            ["Branco", "Branco", "12", "38", "III", "Rosa"],
+            ["Ciano", "-", "-", "39", "III", "Rosa"],
+            ["Azul", "Preto", "13", "41", "IV", "Rosa"],
+            ["Vermelho", "Branco", "13", "42", "IV", "Rosa"],
+            ["Cinza", "Preto", "14", "43", "IV", "Rosa"],
+            ["Amarelo", "Branco", "14", "44", "IV", "Rosa"],
+            ["Verde", "Preto", "15", "45", "IV", "Rosa"],
+            ["Marrom", "Branco", "15", "46", "IV", "Rosa"],
+            ["Preto", "Preto", "16", "47", "IV", "Rosa"],
+            ["Branco", "Branco", "16", "48", "IV", "Rosa"],
+            ["Ciano", "-", "-", "49", "IV", "Rosa"],
+            ["-", "-", "17-20", "51-59", "I", "Laranja"],
+            ["-", "-", "21-24", "61-99", "II", "Laranja"],
+            ["-", "-", "25-28", "71-79", "III", "Laranja"],
+            ["-", "-", "29-32", "81-89", "IV", "Laranja"],
+            ["-", "-", "33-36", "91-99", "I", "Violeta"],
+            ["-", "-", "37-40", "01-09", "II", "Violeta"],
+        ]
+
+        self.second_table.setRowCount(len(data))
+        for row_index, row_data in enumerate(data):
+            for column_index, cell_data in enumerate(row_data):
+                self.second_table.setItem(
                     row_index, column_index, QTableWidgetItem(str(cell_data))
                 )
 
