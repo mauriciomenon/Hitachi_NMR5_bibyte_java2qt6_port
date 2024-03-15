@@ -88,7 +88,8 @@ class App(QMainWindow):
         try:
             n1 = int(t1)
             result, message, title = self.calculo_1_logica(n1)
-            QMessageBox.information(self, title, message)
+            if message != "Erro":
+                QMessageBox.information(self, title, message)
             self.entry_ptno_bitbyte_resultbox.setText(str(result))
         except ValueError:
             QMessageBox.warning(self, "Erro", "Entrada inválida. Por favor, insira um número válido.")
@@ -98,7 +99,8 @@ class App(QMainWindow):
         try:
             n2 = int(t2)
             result, message, title = self.calculo_2_logica(n2)
-            QMessageBox.information(self, title, message)
+            if message != "Erro":
+                QMessageBox.information(self, title, message)
             self.entry_ptno_bitbyte_resultbox.setText(str(result))
         except ValueError:
             QMessageBox.warning(self, "Erro", "Entrada inválida. Por favor, insira um número válido.")
@@ -108,7 +110,7 @@ class App(QMainWindow):
             n1 = int(t1)
             result = 0
             error = 0
-            message = "Não definido"
+            message = "Erro"
             title = "Erro"
 
             if 0 <= n1 <= 36096:
@@ -117,16 +119,19 @@ class App(QMainWindow):
                     message = "Calculadora para SOSTAT, verifique a SOANLG para pontos analógicos"
                 elif 10000 <= n1 <= 11023:
                     result = (n1 - 10000) * 2
-                    message = "Resultado para um ponto 2WAY sem TimeStamp"
+                    # message = "ponto 2WAY sem TimeStamp"
                 elif 15000 <= n1 <= 16023:
                     result = ((n1 - 15000) * 2) + 2048
+                    # message = "ponto 2WAY com TimeStamp"
                 elif 25000 <= n1 <= 25063:
                     result = (((n1 - 25000) // 8) * 16) + (((n1 - 25000) % 8) + 4608)
+                    # message = "ponto 4WAY com TimeStamp"
                 elif 36000 <= n1 <= 36063:
                     result = (((n1 - 36000) // 8) * 16) + (((n1 - 36000) % 8) + 5632)
+                    # message = "ponto LATCH com TimeStamp"
                 elif 36088 <= n1 <= 36095:
                     result = (((n1 - 36064) // 8) * 16) + (((n1 - 36064) % 8) + 5760)
-                    message = f"Resultado: {result}"
+                    # message = "ponto LATCH com TimeStamp"
 
                 if n1 in range(2048, 10000) or n1 in range(11024, 15000) or n1 in range(16024, 25000) or n1 in range(25064, 36000) or n1 in range(36064, 36088):
                     error = 1
@@ -142,8 +147,6 @@ class App(QMainWindow):
 
         except ValueError:
             return -1, "Entrada inválida", title
-        
-    
 
     def calculo_2_logica(self, n2):
         try:
@@ -154,10 +157,13 @@ class App(QMainWindow):
             error = 0
 
             if 0 <= n2 <= 8192:
+                # message = "intervalo definido para SOSTAT.PTNO"
                 if 0 <= n2 <= 2047:
                     result = (n2 // 2) + 10000
-                    message = "Cuidado, pode ser ponto Analógico"
+                    message = "2WAY sem timestamp, verificar se é Analógico"
+                    # message = "2WAY sem TimeStamp"
                 elif 2048 <= n2 <= 4095:
+                    # message = "2WAY com TimeStamp"
                     if n2 % 2 != 0:
                         message = "PTNO deve ser um número par"
                         title = "Erro"
@@ -169,6 +175,7 @@ class App(QMainWindow):
                     title = "Erro"
                     error = 1
                 elif 4608 <= n2 <= 5119:
+                    # message = "4WAY com TimeStamp"
                     adjustments = [(range(4608, 4616), 0), (range(4624, 4632), -8),
                                 (range(4640, 4648), -16), (range(4656, 4664), -24),
                                 (range(4672, 4680), -32), (range(4688, 4696), -40)]
@@ -185,6 +192,7 @@ class App(QMainWindow):
                     title = "Erro"
                     error = 1
                 elif 5632 <= n2 <= 6143:
+                    # message = "Latch com TimeStamp"
                     adjustments = [(range(5632, 5640), 0), (range(5648, 5656), -8),
                                 (range(5664, 5672), -16), (range(5680, 5688), -24),
                                 (range(5696, 5704), -32), (range(5712, 5720), -40),
@@ -204,7 +212,8 @@ class App(QMainWindow):
                     error = 1
                 elif 7000 <= n2 <= 8192:
                     result = 0
-                    message = "Todo Pseudo point tem BITBYTE nulo"
+                    # message = "PseudoPoint"
+                    message = "Todo PseudoPoint tem BITBYTE nulo"
                     title = "Atenção"
             else:
                 error = 1
