@@ -103,73 +103,121 @@ class App(QMainWindow):
         except ValueError:
             QMessageBox.warning(self, "Erro", "Entrada inválida. Por favor, insira um número válido.")
 
-    def calculo_1_logica(self, n1):
-        result = 0
-        message = "Não definido"
-        title = "Erro"
-
-        if 0 <= n1 <= 2047:
-            result = n1
-            message = (
-                "Calculadora para SOSTAT, verifique a SOANLG para pontos analógicos"
-            )
-            title = "Erro"
-        elif 10000 <= n1 <= 11023:
-            result = (n1 - 10000) * 2
-            message = "Resultado para um ponto 2WAY sem TimeStamp"
-        elif 15000 <= n1 <= 16023:
-            result = ((n1 - 15000) * 2) + 2048
-        elif 25000 <= n1 <= 25063:
-            result = (((n1 - 25000) // 8) * 16) + (((n1 - 25000) % 8) + 4608)
-        elif 36000 <= n1 <= 36063:
-            result = (((n1 - 36000) // 8) * 16) + (((n1 - 36000) % 8) + 5632)
-        elif 36088 <= n1 <= 36095:
-            result = (((n1 - 36064) // 8) * 16) + (((n1 - 36064) % 8) + 5760)
-            message = f"Resultado: {result}"
-        else:
-            message = "Verifique valores e intervalos válidos na documentação"
-            title = "Erro:"
+    def calculo_1_logica(self, t1):
+        try:
+            n1 = int(t1)
             result = 0
-        return result, message, title
+            error = 0
+            message = "Não definido"
+            title = "Erro"
+
+            if 0 <= n1 <= 36096:
+                if 0 <= n1 <= 2047:
+                    result = n1
+                    message = "Calculadora para SOSTAT, verifique a SOANLG para pontos analógicos"
+                elif 10000 <= n1 <= 11023:
+                    result = (n1 - 10000) * 2
+                    message = "Resultado para um ponto 2WAY sem TimeStamp"
+                elif 15000 <= n1 <= 16023:
+                    result = ((n1 - 15000) * 2) + 2048
+                elif 25000 <= n1 <= 25063:
+                    result = (((n1 - 25000) // 8) * 16) + (((n1 - 25000) % 8) + 4608)
+                elif 36000 <= n1 <= 36063:
+                    result = (((n1 - 36000) // 8) * 16) + (((n1 - 36000) % 8) + 5632)
+                elif 36088 <= n1 <= 36095:
+                    result = (((n1 - 36064) // 8) * 16) + (((n1 - 36064) % 8) + 5760)
+                    message = f"Resultado: {result}"
+
+                if n1 in range(2048, 10000) or n1 in range(11024, 15000) or n1 in range(16024, 25000) or n1 in range(25064, 36000) or n1 in range(36064, 36088):
+                    error = 1
+
+            else:
+                error = 1
+
+            if error == 1:
+                message = "Verifique valores e intervalos válidos na documentação"
+                result = 0
+
+            return result, message, title
+
+        except ValueError:
+            return -1, "Entrada inválida", title
+        
+    
 
     def calculo_2_logica(self, n2):
-        result = 0
-        message = "Mensagem padrão"  # Definindo um valor padrão
-        title = "Título padrão"  # Definindo um valor padrão
+        try:
+            n2 = int(n2)
+            result = 0
+            message = "Mensagem padrão"
+            title = "Título padrão"
+            error = 0
 
-        if 0 <= n2 <= 2047:
-            result = (n2 // 2) + 10000
-            message = "Cuidado, pode ser ponto Analógico"
-        elif 2048 <= n2 <= 4095:
-            if n2 % 2 != 0:
-                message = "PTNO deve ser um número par"
-                title = "Erro"
+            if 0 <= n2 <= 8192:
+                if 0 <= n2 <= 2047:
+                    result = (n2 // 2) + 10000
+                    message = "Cuidado, pode ser ponto Analógico"
+                elif 2048 <= n2 <= 4095:
+                    if n2 % 2 != 0:
+                        message = "PTNO deve ser um número par"
+                        title = "Erro"
+                        error = 1
+                    else:
+                        result = (n2 + 27952) // 2
+                elif 4096 <= n2 <= 4607:
+                    message = "Intervalo não utilizado"
+                    title = "Erro"
+                    error = 1
+                elif 4608 <= n2 <= 5119:
+                    adjustments = [(range(4608, 4616), 0), (range(4624, 4632), -8),
+                                (range(4640, 4648), -16), (range(4656, 4664), -24),
+                                (range(4672, 4680), -32), (range(4688, 4696), -40)]
+                    for adjustment_range, offset in adjustments:
+                        if n2 in adjustment_range:
+                            result = n2 + 20392 + offset
+                            break
+                    else:
+                        if n2 >= 4696:
+                            message = "Intervalo não utilizado atualmente"
+                            title = "Erro"
+                elif 5120 <= n2 <= 5631:
+                    message = "Intervalo não utilizado"
+                    title = "Erro"
+                    error = 1
+                elif 5632 <= n2 <= 6143:
+                    adjustments = [(range(5632, 5640), 0), (range(5648, 5656), -8),
+                                (range(5664, 5672), -16), (range(5680, 5688), -24),
+                                (range(5696, 5704), -32), (range(5712, 5720), -40),
+                                (range(5728, 5736), -48), (range(5744, 5752), -56),
+                                (range(5792, 5800), -80), (range(5808, 5816), -88)]
+                    for adjustment_range, offset in adjustments:
+                        if n2 in adjustment_range:
+                            result = n2 + 30368 + offset
+                            break
+                    else:
+                        if n2 >= 5816:
+                            message = "Intervalo não utilizado atualmente"
+                            title = "Erro"
+                elif 6144 <= n2 <= 6999:
+                    message = "Intervalo não utilizado"
+                    title = "Erro"
+                    error = 1
+                elif 7000 <= n2 <= 8192:
+                    result = 0
+                    message = "Todo Pseudo point tem BITBYTE nulo"
+                    title = "Atenção"
             else:
-                result = (n2 + 27952) // 2
-        elif 4096 <= n2 <= 4607:
-            message = "Intervalo não utilizado"
-            title = "Erro"
-        elif 4608 <= n2 <= 5119:
-            message = "TBD resto"  # ... [restante da lógica de cálculo] ...
-            title = "TBD"
-        elif 5120 <= n2 <= 5631:
-            message = "Intervalo não utilizado"
-            title = "Erro"
-        elif 5632 <= n2 <= 6143:
-            message = "TBD resto"  # ... [restante da lógica de cálculo] ...
-            title = "TBD"
-        elif 6144 <= n2 <= 6999:
-            message = "Intervalo não utilizado"
-            title = "Erro"
-        elif 7000 <= n2 <= 8192:
-            result = 0
-            message = "Todo Pseudo point tem BITBYTE nulo"
-            title = "Atenção"
-        else:
-            message = "Verifique valores e intervalos válidos na documentação"
-            title = "Erro:"
-            result = 0
-        return result, message, title
+                error = 1
+
+            if error == 1:
+                message = "Verifique valores e intervalos válidos na documentação"
+                title = "Erro:"
+                result = 0
+
+            return result, message, title
+
+        except ValueError:
+            return -1, "Entrada inválida", "Erro"
 
     def add_table_data(self):
         data = [
