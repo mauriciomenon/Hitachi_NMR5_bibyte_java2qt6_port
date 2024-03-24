@@ -46,13 +46,39 @@ class App(QMainWindow):
 
     def setupMainTable(self, layout):
         self.table = QTableWidget()
-        self.table.setColumnCount(8)
-        self.table.setHorizontalHeaderLabels(["UTR", "SOM", "Logic", "Link", "Localização", "Unidade", "Cota [m]", "Eixo"])
+        # Assuming 'data' is a list of lists, where each inner list represents a record.
+        data = self.get_data()  # You need to implement this method to return your data.
+        self.table.setRowCount(
+            len(data[0])
+        )  # Set the number of rows to the number of fields.
+        self.table.setColumnCount(
+            len(data)
+        )  # Set the number of columns to the number of records.
+
+        # Setting horizontal headers (fields) as what were previously the records' unique identifiers.
+        headers = [str(i) for i in range(1, len(data) + 1)]
+        self.table.setHorizontalHeaderLabels(headers)
+
+        # Setting vertical headers (field names).
+        field_names = [
+            "UTR",
+            "SOM",
+            "Logic",
+            "Link",
+            "Localização",
+            "Unidade",
+            "Cota [m]",
+            "Eixo",
+        ]
+        self.table.setVerticalHeaderLabels(field_names)
+
         self.table.setSortingEnabled(True)
         layout.addWidget(self.table)
         self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        self.add_table_data()
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents
+        )
+        self.add_table_data(data)  # Pass the data to the method.
         self.createButton("Procurar Geral", self.procurar_geral, layout)
 
     def setupSecondTable(self, layout):
@@ -297,10 +323,22 @@ class App(QMainWindow):
             ["UTR670-2", "T75A06", "87", "71", "Casa de Força", "U10", "131", "C-D"],
         ]
 
-        self.table.setRowCount(len(data))
-        for row_index, row_data in enumerate(data):
-            for column_index, cell_data in enumerate(row_data):
-                self.table.setItem(row_index, column_index, QTableWidgetItem(str(cell_data)))
+        # The number of rows is now the number of items in a single record.
+        # Assuming all records have the same number of items.
+        self.table.setRowCount(len(data[0]))
+
+        # The number of columns is the total number of records.
+        self.table.setColumnCount(len(data))
+
+        # Set the vertical headers to what was previously the first record's data.
+        self.table.setVerticalHeaderLabels(
+            ["UTR", "SOM", "Logic", "Link", "Localização", "Unidade", "Cota [m]", "Eixo"]
+        )
+
+        # Transpose the data to populate the table.
+        for col_index, record in enumerate(data):
+            for row_index, item in enumerate(record):
+                self.table.setItem(row_index, col_index, QTableWidgetItem(item))
 
     def populate_second_table(self):
         data = [
