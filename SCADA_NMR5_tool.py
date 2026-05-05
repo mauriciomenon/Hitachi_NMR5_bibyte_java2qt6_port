@@ -10,7 +10,6 @@ from PyQt6.QtWidgets import (
     QApplication,
     QGridLayout,
     QGroupBox,
-    QSplitter,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -29,8 +28,8 @@ from PyQt6.QtWidgets import (
 class AnalogGraph(QWidget):
     def __init__(self):
         super().__init__()
-        self._result = AnalogResult(12.0, -2.5, 10.0, 19660, "0x4ccc")
-        self.setMinimumSize(260, 120)
+        self._result = AnalogResult(12.0, -2.5, 10.0, 19660, "0x4ccc", 50.0, 60.0)
+        self.setMinimumSize(260, 96)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def set_result(self, result):
@@ -42,35 +41,53 @@ class AnalogGraph(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        rect = QRectF(36, 12, self.width() - 48, self.height() - 30)
-        if rect.width() <= 0 or rect.height() <= 0:
+        bar_rect = QRectF(16, 42, self.width() - 32, 16)
+        if bar_rect.width() <= 0 or bar_rect.height() <= 0:
             return
 
         painter.fillRect(self.rect(), QColor("#151515"))
-        painter.setPen(QPen(QColor("#555555"), 1))
-        painter.drawRect(rect)
 
-        y_min = min(0.0, self._result.bias)
-        y_max = max(self._result.scale, self._result.bias, 1.0)
-        span = y_max - y_min
-        if span == 0:
-            span = 1.0
+        raw_fraction = self._result.raw_int16 / 32767
+        clamped_fraction = max(0.0, min(raw_fraction, 1.0))
+        marker_x = bar_rect.left() + clamped_fraction * bar_rect.width()
+        fill_rect = QRectF(
+            bar_rect.left(),
+            bar_rect.top(),
+            marker_x - bar_rect.left(),
+            bar_rect.height(),
+        )
+        out_of_scale = raw_fraction < 0.0 or raw_fraction > 1.0
+        fill_color = QColor("#e08f2a") if out_of_scale else QColor("#2da9e9")
 
-        def point(raw, value):
-            x = rect.left() + (raw / 32767) * rect.width()
-            y = rect.bottom() - ((value - y_min) / span) * rect.height()
-            return x, y
+        painter.setPen(QPen(QColor("#555b61"), 1))
+        painter.drawRoundedRect(bar_rect, 4, 4)
+        painter.fillRect(fill_rect, fill_color)
 
-        x0, y0 = point(0, self._result.bias)
-        x1, y1 = point(32767, self._result.scale)
-        painter.setPen(QPen(QColor("#66c2ff"), 2))
-        painter.drawLine(int(x0), int(y0), int(x1), int(y1))
+        painter.setPen(QPen(QColor("#f1f3f5"), 2))
+        painter.drawLine(int(marker_x), int(bar_rect.top()) - 6, int(marker_x), int(bar_rect.bottom()) + 6)
+        painter.drawEllipse(int(marker_x) - 3, int(bar_rect.center().y()) - 3, 6, 6)
 
-        painter.setPen(QPen(QColor("#dddddd"), 1))
-        painter.drawText(4, int(rect.top()) + 10, f"{y_max:.3g}")
-        painter.drawText(4, int(rect.bottom()), f"{y_min:.3g}")
-        painter.drawText(int(rect.left()), self.height() - 6, "0")
-        painter.drawText(int(rect.right()) - 34, self.height() - 6, "32767")
+        painter.setPen(QPen(QColor("#f1f3f5"), 1))
+        painter.drawText(16, 20, f"{self._result.current_ma:.4g} mA")
+        painter.drawText(
+            int(self.width() * 0.42),
+            20,
+            f"{self._result.raw_int16} / {self._result.raw_hex16}",
+        )
+        painter.drawText(
+            int(self.width() * 0.42),
+            84,
+            f"{self._result.range_percent:.1f}% range",
+        )
+        if out_of_scale:
+            painter.setPen(QPen(QColor("#e08f2a"), 1))
+            painter.drawText(16, 84, "FORA ESCALA")
+        else:
+            painter.drawText(16, 84, f"{self._result.raw_percent:.1f}% raw")
+
+        painter.setPen(QPen(QColor("#b8c0c7"), 1))
+        painter.drawText(int(bar_rect.left()), int(bar_rect.bottom()) + 16, "0")
+        painter.drawText(int(bar_rect.right()) - 34, int(bar_rect.bottom()) + 16, "32767")
 
 
 class App(QMainWindow):
@@ -88,30 +105,25 @@ class App(QMainWindow):
         layout.setSpacing(8)
 
         controls_panel = QWidget()
-        controls_panel.setMinimumWidth(420)
-        controls_panel.setMaximumWidth(560)
+        controls_panel.setMinimumWidth(460)
+        controls_panel.setMaximumWidth(640)
         controls_layout = QVBoxLayout(controls_panel)
         controls_layout.setContentsMargins(0, 0, 0, 0)
         self.setupInitialComponents(controls_layout)
-        controls_layout.addStretch(1)
+        self.setupSecondTable(controls_layout)
         layout.addWidget(controls_panel, 0)
 
         tables_panel = QWidget()
         tables_layout = QVBoxLayout(tables_panel)
         tables_layout.setContentsMargins(0, 0, 0, 0)
-        tables_layout.addWidget(QLabel("Localizacao/codigo de cores dos cabos"))
+        tables_layout.addWidget(QLabel("Localizacao das UTRs"))
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar nas tabelas")
         tables_layout.addWidget(self.search_input)
         self.createButton("Procurar Geral", self.procurar_geral, tables_layout)
 
-        tables_splitter = QSplitter(Qt.Orientation.Vertical)
-        self.setupMainTable(tables_splitter)
-        self.setupSecondTable(tables_splitter)
-        tables_splitter.setStretchFactor(0, 3)
-        tables_splitter.setStretchFactor(1, 2)
-        tables_layout.addWidget(tables_splitter, 1)
+        self.setupMainTable(tables_layout)
         layout.addWidget(tables_panel, 1)
 
         self.showMaximized()

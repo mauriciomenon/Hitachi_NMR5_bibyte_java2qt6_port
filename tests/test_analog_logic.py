@@ -16,6 +16,8 @@ def test_calculate_analog_defaults_match_rawcounts_v12():
     assert result.scale == 10
     assert result.raw_int16 == 19660
     assert result.raw_hex16 == "0x4ccc"
+    assert result.range_percent == 50.0
+    assert result.raw_percent == pytest.approx(60.0, abs=0.01)
 
 
 def test_calculate_analog_scaled_range_keeps_v12_formula():
@@ -26,6 +28,8 @@ def test_calculate_analog_scaled_range_keeps_v12_formula():
     assert result.scale == 100
     assert result.raw_int16 == 19660
     assert result.raw_hex16 == "0x4ccc"
+    assert result.range_percent == 50.0
+    assert result.raw_percent == pytest.approx(60.0, abs=0.01)
 
 
 def test_calculate_analog_uses_configured_current_limits():
@@ -36,6 +40,8 @@ def test_calculate_analog_uses_configured_current_limits():
     assert result.scale == 100
     assert result.raw_int16 == 1638
     assert result.raw_hex16 == "0x0666"
+    assert result.range_percent == 5.0
+    assert result.raw_percent == pytest.approx(5.0, abs=0.01)
 
 
 def test_calculate_analog_formats_negative_raw_as_hex16():

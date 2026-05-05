@@ -8,6 +8,8 @@ class AnalogResult:
     scale: float
     raw_int16: int
     raw_hex16: str
+    range_percent: float
+    raw_percent: float
 
 
 def calculate_analog(lim_inf, lim_sup, range_inf, range_sup, measured):
@@ -35,6 +37,8 @@ def calculate_analog(lim_inf, lim_sup, range_inf, range_sup, measured):
     scale = range_sup_value
     raw_int16 = int((current_ma / lim_sup_value) * (2**15 - 1))
     raw_hex16 = f"0x{raw_int16 & 0xFFFF:04x}"
+    range_percent = ((measured_value - range_inf_value) / range_span) * 100
+    raw_percent = (raw_int16 / (2**15 - 1)) * 100
 
     return AnalogResult(
         current_ma=current_ma,
@@ -42,4 +46,6 @@ def calculate_analog(lim_inf, lim_sup, range_inf, range_sup, measured):
         scale=scale,
         raw_int16=raw_int16,
         raw_hex16=raw_hex16,
+        range_percent=range_percent,
+        raw_percent=raw_percent,
     )
