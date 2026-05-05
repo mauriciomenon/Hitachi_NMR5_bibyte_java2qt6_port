@@ -28,9 +28,9 @@ QLabel#analogPrimaryValue {
     border: 1px solid #2da9e9;
     border-radius: 4px;
     color: #ffffff;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
-    padding: 6px;
+    padding: 4px 6px;
 }
 
 QLabel#analogPrimaryIntValue {
@@ -38,9 +38,9 @@ QLabel#analogPrimaryIntValue {
     border: 1px solid #3b3f43;
     border-radius: 4px;
     color: #dbe3ea;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
-    padding: 6px;
+    padding: 4px 6px;
 }
 
 QLabel#analogStatusOk {

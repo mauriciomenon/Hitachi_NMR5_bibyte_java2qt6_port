@@ -231,7 +231,6 @@ class App(QMainWindow):
         controls_layout.setContentsMargins(0, 0, 0, 0)
         controls_layout.setSpacing(6)
         self.setupInitialComponents(controls_layout)
-        self.setupSecondTable(controls_layout)
         layout.addWidget(controls_panel, 0)
 
         tables_panel = QWidget()
@@ -244,10 +243,14 @@ class App(QMainWindow):
         tables_layout.addWidget(self.search_input)
         self.createButton("Procurar Geral", self.procurar_geral, tables_layout)
 
-        self.setupMainTable(tables_layout)
+        tables_body_layout = QHBoxLayout()
+        tables_body_layout.setSpacing(8)
+        self.setupMainTable(tables_body_layout)
+        self.setupSecondTable(tables_body_layout)
+        tables_layout.addLayout(tables_body_layout)
         layout.addWidget(tables_panel, 1)
 
-        self.resize(1220, 760)
+        self.resize(1280, 720)
 
     def applyStyle(self):
         style_path = Path(__file__).with_name("style.qss")
@@ -304,11 +307,17 @@ class App(QMainWindow):
         self.table.setSortingEnabled(True)
         header = self.table.horizontalHeader()
         if header is not None:
-            header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
-            header.setSectionResizeMode(4, QHeaderView.ResizeMode.Interactive)
-            self.table.setColumnWidth(4, 260)
-        layout.addWidget(panel)
+            self.table.setColumnWidth(0, 70)
+            self.table.setColumnWidth(1, 68)
+            self.table.setColumnWidth(2, 44)
+            self.table.setColumnWidth(3, 38)
+            self.table.setColumnWidth(4, 168)
+            self.table.setColumnWidth(5, 56)
+            self.table.setColumnWidth(6, 62)
+            self.table.setColumnWidth(7, 42)
+        layout.addWidget(panel, 2)
 
     def setupSecondTable(self, layout):
         panel = QWidget()
@@ -335,15 +344,15 @@ class App(QMainWindow):
         self.second_table.setSortingEnabled(True)
         header = self.second_table.horizontalHeader()
         if header is not None:
-            header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
-            self.second_table.setColumnWidth(0, 86)
+            self.second_table.setColumnWidth(0, 96)
             self.second_table.setColumnWidth(1, 62)
             self.second_table.setColumnWidth(2, 38)
             self.second_table.setColumnWidth(3, 38)
-            self.second_table.setColumnWidth(4, 42)
-            self.second_table.setColumnWidth(5, 78)
-        layout.addWidget(panel)
+            self.second_table.setColumnWidth(4, 30)
+            self.second_table.setColumnWidth(5, 96)
+        layout.addWidget(panel, 1)
 
     def createButton(self, text, function, layout):
         button = QPushButton(text)
