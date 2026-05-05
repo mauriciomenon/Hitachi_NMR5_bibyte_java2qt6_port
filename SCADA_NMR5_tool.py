@@ -1,6 +1,16 @@
 import sys
+from pathlib import Path
+
+from analog_logic import AnalogResult, calculate_analog
+from bitbyte_data import CABLE_COLOR_DATA, RTU_DATA
+from bitbyte_logic import bitbyte_from_ptno_result, ptno_from_bitbyte_result
+from PyQt6.QtGui import QColor, QPainter, QPen
+from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtWidgets import (
     QApplication,
+    QGridLayout,
+    QGroupBox,
+    QSplitter,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -14,7 +24,53 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QSizePolicy,
 )
-from PyQt6.QtCore import Qt
+
+
+class AnalogGraph(QWidget):
+    def __init__(self):
+        super().__init__()
+        self._result = AnalogResult(12.0, -2.5, 10.0, 19660, "0x4ccc")
+        self.setMinimumSize(260, 120)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+    def set_result(self, result):
+        self._result = result
+        self.update()
+
+    def paintEvent(self, a0):
+        super().paintEvent(a0)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        rect = QRectF(36, 12, self.width() - 48, self.height() - 30)
+        if rect.width() <= 0 or rect.height() <= 0:
+            return
+
+        painter.fillRect(self.rect(), QColor("#151515"))
+        painter.setPen(QPen(QColor("#555555"), 1))
+        painter.drawRect(rect)
+
+        y_min = min(0.0, self._result.bias)
+        y_max = max(self._result.scale, self._result.bias, 1.0)
+        span = y_max - y_min
+        if span == 0:
+            span = 1.0
+
+        def point(raw, value):
+            x = rect.left() + (raw / 32767) * rect.width()
+            y = rect.bottom() - ((value - y_min) / span) * rect.height()
+            return x, y
+
+        x0, y0 = point(0, self._result.bias)
+        x1, y1 = point(32767, self._result.scale)
+        painter.setPen(QPen(QColor("#66c2ff"), 2))
+        painter.drawLine(int(x0), int(y0), int(x1), int(y1))
+
+        painter.setPen(QPen(QColor("#dddddd"), 1))
+        painter.drawText(4, int(rect.top()) + 10, f"{y_max:.3g}")
+        painter.drawText(4, int(rect.bottom()), f"{y_min:.3g}")
+        painter.drawText(int(rect.left()), self.height() - 6, "0")
+        painter.drawText(int(rect.right()) - 34, self.height() - 6, "32767")
 
 
 class App(QMainWindow):
@@ -22,40 +78,124 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("IEC-870-5 Unbalanced Mode")
+        self.applyStyle()
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        layout = QVBoxLayout(central_widget)
 
-        self.setupInitialComponents(layout)
-        self.setupMainTable(layout)
-        self.setupSecondTable(layout)
+        layout = QHBoxLayout(central_widget)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(8)
+
+        controls_panel = QWidget()
+        controls_panel.setMinimumWidth(420)
+        controls_panel.setMaximumWidth(560)
+        controls_layout = QVBoxLayout(controls_panel)
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        self.setupInitialComponents(controls_layout)
+        controls_layout.addStretch(1)
+        layout.addWidget(controls_panel, 0)
+
+        tables_panel = QWidget()
+        tables_layout = QVBoxLayout(tables_panel)
+        tables_layout.setContentsMargins(0, 0, 0, 0)
+        tables_layout.addWidget(QLabel("Localizacao/codigo de cores dos cabos"))
+
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Buscar nas tabelas")
+        tables_layout.addWidget(self.search_input)
+        self.createButton("Procurar Geral", self.procurar_geral, tables_layout)
+
+        tables_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.setupMainTable(tables_splitter)
+        self.setupSecondTable(tables_splitter)
+        tables_splitter.setStretchFactor(0, 3)
+        tables_splitter.setStretchFactor(1, 2)
+        tables_layout.addWidget(tables_splitter, 1)
+        layout.addWidget(tables_panel, 1)
 
         self.showMaximized()
 
-    def setupInitialComponents(self, layout):
-        layout.addWidget(QLabel("SOSTAT"))
-        layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
+    def applyStyle(self):
+        style_path = Path(__file__).with_name("style.qss")
+        self.setStyleSheet(style_path.read_text(encoding="utf-8"))
 
-        self.entry_bitbyte = QLineEdit()
-        layout.addWidget(self.entry_bitbyte)
+    def setupInitialComponents(self, layout):
+        bitbyte_box = QGroupBox("SOSTAT")
+        bitbyte_layout = QVBoxLayout(bitbyte_box)
+        layout.addWidget(bitbyte_box)
+
+        bitbyte_layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
+
+        self.entry_input = QLineEdit()
+        bitbyte_layout.addWidget(self.entry_input)
 
         buttons_layout = QHBoxLayout()
-        self.createButton("Calcular PTNO", self.calcula_1, buttons_layout)
-        self.createButton("Calcular Bit...", self.calcula_2, buttons_layout)
-        layout.addLayout(buttons_layout)
+        self.createButton("Calcular PTNO", self.calcula_2, buttons_layout)
+        self.createButton("Calcular BitByte", self.calcula_1, buttons_layout)
+        bitbyte_layout.addLayout(buttons_layout)
 
         self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
         self.entry_ptno_bitbyte_resultbox.setReadOnly(True)
         self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.entry_ptno_bitbyte_resultbox)
+        bitbyte_layout.addWidget(self.entry_ptno_bitbyte_resultbox)
 
-        self.createButton("Limpar valores", self.limpar_valores, layout)
-        layout.addWidget(QLabel("Localização/código de cores dos cabos"))
-        self.createButton("Localização das UTRs", lambda: None, layout)
-        self.createButton("Código e Cores dos Cabos de UTRs", lambda: None, layout)
+        self.createButton("Limpar valores", self.limpar_valores, bitbyte_layout)
+
+        self.setupAnalogPanel(layout)
+
+    def setupAnalogPanel(self, layout):
+        analog_box = QGroupBox("Analogico Raw Counts BIAS/SCALE v1.12")
+        analog_layout = QVBoxLayout(analog_box)
+        analog_form_layout = QGridLayout()
+        analog_layout.addLayout(analog_form_layout)
+        layout.addWidget(analog_box)
+
+        self.analog_lim_inf = QLineEdit("4")
+        self.analog_lim_sup = QLineEdit("20")
+        self.analog_range_inf = QLineEdit("0")
+        self.analog_range_sup = QLineEdit("10")
+        self.analog_measured = QLineEdit("5")
+        self.analog_current = QLabel("--")
+        self.analog_bias = QLabel("--")
+        self.analog_scale = QLabel("--")
+        self.analog_raw_int = QLabel("--")
+        self.analog_raw_hex = QLabel("--")
+        self.analog_graph = AnalogGraph()
+
+        fields = [
+            ("Lim inf mA", self.analog_lim_inf),
+            ("Lim sup mA", self.analog_lim_sup),
+            ("Range inf", self.analog_range_inf),
+            ("Range sup", self.analog_range_sup),
+            ("Medido", self.analog_measured),
+        ]
+        for row, (label, field) in enumerate(fields):
+            analog_form_layout.addWidget(QLabel(label), row, 0)
+            analog_form_layout.addWidget(field, row, 1)
+
+        result_labels = [
+            ("mA", self.analog_current),
+            ("BIAS", self.analog_bias),
+            ("SCALE", self.analog_scale),
+            ("INT16", self.analog_raw_int),
+            ("HEX16", self.analog_raw_hex),
+        ]
+        for row, (label, value_label) in enumerate(result_labels):
+            analog_form_layout.addWidget(QLabel(label), row, 2)
+            analog_form_layout.addWidget(value_label, row, 3)
+
+        analog_layout.addWidget(self.analog_graph)
+        analog_button = QPushButton("Calcular analogico")
+        analog_button.clicked.connect(lambda: self.calculate_analog())
+        analog_layout.addWidget(analog_button)
+        self.calculate_analog(show_warning=False)
 
     def setupMainTable(self, layout):
+        panel = QWidget()
+        panel_layout = QVBoxLayout(panel)
+        panel_layout.setContentsMargins(0, 0, 0, 0)
+        self.createButton("Localizacao das UTRs", self.focus_main_table, panel_layout)
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
@@ -64,24 +204,37 @@ class App(QMainWindow):
                 "SOM",
                 "Logic",
                 "Link",
-                "Localização",
+                "Localizacao",
                 "Unidade",
                 "Cota [m]",
                 "Eixo",
             ]
         )
-        self.table.setSortingEnabled(True)
-        layout.addWidget(self.table)
+        panel_layout.addWidget(self.table)
         self.table.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
-        self.table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.ResizeToContents
-        )
+        self.table.setAlternatingRowColors(True)
+        self.table.setShowGrid(False)
+        self.table.setWordWrap(False)
+        vertical_header = self.table.verticalHeader()
+        if vertical_header is not None:
+            vertical_header.setDefaultSectionSize(28)
         self.add_table_data()
-        self.createButton("Procurar Geral", self.procurar_geral, layout)
+        self.table.setSortingEnabled(True)
+        header = self.table.horizontalHeader()
+        if header is not None:
+            header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(panel)
 
     def setupSecondTable(self, layout):
+        panel = QWidget()
+        panel_layout = QVBoxLayout(panel)
+        panel_layout.setContentsMargins(0, 0, 0, 0)
+        self.createButton(
+            "Codigo e Cores dos Cabos de UTRs", self.focus_second_table, panel_layout
+        )
         self.second_table = QTableWidget()
         self.second_table.setColumnCount(6)
         self.second_table.setHorizontalHeaderLabels(
@@ -94,15 +247,23 @@ class App(QMainWindow):
                 "Cor da Anilha",
             ]
         )
-        self.second_table.setSortingEnabled(True)
-        layout.addWidget(self.second_table)
+        panel_layout.addWidget(self.second_table)
         self.second_table.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
-        self.second_table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.ResizeToContents
-        )
+        self.second_table.setAlternatingRowColors(True)
+        self.second_table.setShowGrid(False)
+        self.second_table.setWordWrap(False)
+        vertical_header = self.second_table.verticalHeader()
+        if vertical_header is not None:
+            vertical_header.setDefaultSectionSize(28)
         self.populate_second_table()
+        self.second_table.setSortingEnabled(True)
+        header = self.second_table.horizontalHeader()
+        if header is not None:
+            header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(panel)
 
     def createButton(self, text, function, layout):
         button = QPushButton(text)
@@ -110,313 +271,90 @@ class App(QMainWindow):
         layout.addWidget(button)
 
     def limpar_valores(self):
-        self.entry_bitbyte.clear()
+        self.entry_input.clear()
         self.entry_ptno_bitbyte_resultbox.setText("Resultado")
         self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+    def calculate_analog(self, show_warning=True):
+        try:
+            result = calculate_analog(
+                self.analog_lim_inf.text(),
+                self.analog_lim_sup.text(),
+                self.analog_range_inf.text(),
+                self.analog_range_sup.text(),
+                self.analog_measured.text(),
+            )
+        except ValueError as exc:
+            if show_warning:
+                QMessageBox.warning(self, "Erro", str(exc))
+            return
+
+        self.analog_current.setText(f"{result.current_ma:.6g}")
+        self.analog_bias.setText(f"{result.bias:.6g}")
+        self.analog_scale.setText(f"{result.scale:.6g}")
+        self.analog_raw_int.setText(str(result.raw_int16))
+        self.analog_raw_hex.setText(result.raw_hex16)
+        self.analog_graph.set_result(result)
+
+    def focus_main_table(self):
+        self.table.setFocus()
+        if self.table.rowCount() > 0:
+            self.table.scrollToItem(self.table.item(0, 0))
+
+    def focus_second_table(self):
+        self.second_table.setFocus()
+        if self.second_table.rowCount() > 0:
+            self.second_table.scrollToItem(self.second_table.item(0, 0))
+
     def procurar_geral(self):
-        search_text = self.entry_bitbyte.text().strip().lower()
-        for row in range(self.table.rowCount()):
-            for col in range(self.table.columnCount()):
-                item = self.table.item(row, col)
+        search_text = self.search_input.text().strip().lower()
+        self.table.clearSelection()
+        self.second_table.clearSelection()
+        self.select_matching_items(self.table, search_text)
+        self.select_matching_items(self.second_table, search_text)
+
+    def select_matching_items(self, table, search_text):
+        if not search_text:
+            return
+        for row in range(table.rowCount()):
+            for col in range(table.columnCount()):
+                item = table.item(row, col)
                 if item and search_text in item.text().strip().lower():
                     item.setSelected(True)
 
     def calcula_1(self):
-        t1 = self.entry_bitbyte.text().strip()
-        try:
-            n1 = int(t1)
-            result, message, title = self.calculo_1_logica(n1)
-            if message != "Erro":
-                QMessageBox.information(self, title, message)
-            self.entry_ptno_bitbyte_resultbox.setText(str(result))
-        except ValueError:
-            QMessageBox.warning(
-                self, "Erro", "Entrada inválida. Por favor, insira um número válido."
-            )
+        result, message, title = bitbyte_from_ptno_result(self.entry_input.text())
+        if result < 0:
+            QMessageBox.warning(self, title, message)
+            self.entry_ptno_bitbyte_resultbox.setText("Resultado")
+            return
+
+        if message:
+            QMessageBox.information(self, title, message)
+        self.entry_ptno_bitbyte_resultbox.setText(str(result))
 
     def calcula_2(self):
-        t2 = self.entry_bitbyte.text().strip()
-        try:
-            n2 = int(t2)
-            result, message, title = self.calculo_2_logica(n2)
-            if message != "Erro":
-                QMessageBox.information(self, title, message)
-            self.entry_ptno_bitbyte_resultbox.setText(str(result))
-        except ValueError:
-            QMessageBox.warning(
-                self, "Erro", "Entrada inválida. Por favor, insira um número válido."
-            )
+        result, message, title = ptno_from_bitbyte_result(self.entry_input.text())
+        if result < 0:
+            QMessageBox.warning(self, title, message)
+            self.entry_ptno_bitbyte_resultbox.setText("Resultado")
+            return
 
-    def calculo_1_logica(self, t1):
-        try:
-            n1 = int(t1)
-            result = 0
-            error = 0
-            message = "Erro"
-            title = "Erro"
-
-            if 0 <= n1 <= 36096:
-                if 0 <= n1 <= 2047:
-                    result = n1
-                    message = "Calculadora para SOSTAT, verifique a SOANLG para pontos analógicos"
-                elif 10000 <= n1 <= 11023:
-                    result = (n1 - 10000) * 2
-                    # message = "ponto 2WAY sem TimeStamp"
-                elif 15000 <= n1 <= 16023:
-                    result = ((n1 - 15000) * 2) + 2048
-                    # message = "ponto 2WAY com TimeStamp"
-                elif 25000 <= n1 <= 25063:
-                    result = (((n1 - 25000) // 8) * 16) + (((n1 - 25000) % 8) + 4608)
-                    # message = "ponto 4WAY com TimeStamp"
-                elif 36000 <= n1 <= 36063:
-                    result = (((n1 - 36000) // 8) * 16) + (((n1 - 36000) % 8) + 5632)
-                    # message = "ponto LATCH com TimeStamp"
-                elif 36088 <= n1 <= 36095:
-                    result = (((n1 - 36064) // 8) * 16) + (((n1 - 36064) % 8) + 5760)
-                    # message = "ponto LATCH com TimeStamp"
-
-                if (
-                    n1 in range(2048, 10000)
-                    or n1 in range(11024, 15000)
-                    or n1 in range(16024, 25000)
-                    or n1 in range(25064, 36000)
-                    or n1 in range(36064, 36088)
-                ):
-                    error = 1
-
-            else:
-                error = 1
-
-            if error == 1:
-                message = "Verifique valores e intervalos válidos na documentação"
-                result = 0
-
-            return result, message, title
-
-        except ValueError:
-            return -1, "Entrada inválida", title
-
-    def calculo_2_logica(self, n2):
-        try:
-            n2 = int(n2)
-            result = 0
-            message = "Mensagem padrão"
-            title = "Título padrão"
-            error = 0
-
-            if 0 <= n2 <= 8192:
-                # message = "intervalo definido para SOSTAT.PTNO"
-                if 0 <= n2 <= 2047:
-                    result = (n2 // 2) + 10000
-                    message = "2WAY sem timestamp, verificar se é Analógico"
-                    # message = "2WAY sem TimeStamp"
-                elif 2048 <= n2 <= 4095:
-                    # message = "2WAY com TimeStamp"
-                    if n2 % 2 != 0:
-                        message = "PTNO deve ser um número par"
-                        title = "Erro"
-                        error = 1
-                    else:
-                        result = (n2 + 27952) // 2
-                elif 4096 <= n2 <= 4607:
-                    message = "Intervalo não utilizado"
-                    title = "Erro"
-                    error = 1
-                elif 4608 <= n2 <= 5119:
-                    # message = "4WAY com TimeStamp"
-                    adjustments = [
-                        (range(4608, 4616), 0),
-                        (range(4624, 4632), -8),
-                        (range(4640, 4648), -16),
-                        (range(4656, 4664), -24),
-                        (range(4672, 4680), -32),
-                        (range(4688, 4696), -40),
-                    ]
-                    for adjustment_range, offset in adjustments:
-                        if n2 in adjustment_range:
-                            result = n2 + 20392 + offset
-                            break
-                    else:
-                        if n2 >= 4696:
-                            message = "Intervalo não utilizado atualmente"
-                            title = "Erro"
-                elif 5120 <= n2 <= 5631:
-                    message = "Intervalo não utilizado"
-                    title = "Erro"
-                    error = 1
-                elif 5632 <= n2 <= 6143:
-                    # message = "Latch com TimeStamp"
-                    adjustments = [
-                        (range(5632, 5640), 0),
-                        (range(5648, 5656), -8),
-                        (range(5664, 5672), -16),
-                        (range(5680, 5688), -24),
-                        (range(5696, 5704), -32),
-                        (range(5712, 5720), -40),
-                        (range(5728, 5736), -48),
-                        (range(5744, 5752), -56),
-                        (range(5792, 5800), -80),
-                        (range(5808, 5816), -88),
-                    ]
-                    for adjustment_range, offset in adjustments:
-                        if n2 in adjustment_range:
-                            result = n2 + 30368 + offset
-                            break
-                    else:
-                        if n2 >= 5816:
-                            message = "Intervalo não utilizado atualmente"
-                            title = "Erro"
-                elif 6144 <= n2 <= 6999:
-                    message = "Intervalo não utilizado"
-                    title = "Erro"
-                    error = 1
-                elif 7000 <= n2 <= 8192:
-                    result = 0
-                    # message = "PseudoPoint"
-                    message = "Todo PseudoPoint tem BITBYTE nulo"
-                    title = "Atenção"
-            else:
-                error = 1
-
-            if error == 1:
-                message = "Verifique valores e intervalos válidos na documentação"
-                title = "Erro:"
-                result = 0
-
-            return result, message, title
-
-        except ValueError:
-            return -1, "Entrada inválida", "Erro"
+        if message:
+            QMessageBox.information(self, title, message)
+        self.entry_ptno_bitbyte_resultbox.setText(str(result))
 
     def add_table_data(self):
-        data = [
-            ["UTR501", "A01R01", "1", "1", "Casa de Força", "U01", "108", "C-D"],
-            ["UTR502", "A02R01", "2", "2", "Casa de Força", "U02", "108", "C-D"],
-            ["UTR503", "A03R01", "3", "3", "Casa de Força", "U03", "108", "C-D"],
-            ["UTR504", "A04R01", "4", "4", "Casa de Força", "U04", "108", "C-D"],
-            ["UTR505", "A05R01", "5", "5", "Casa de Força", "U05", "108", "C-D"],
-            ["UTR506", "A06R01", "6", "1", "Casa de Força", "U06", "108", "C-D"],
-            ["UTR507", "A07R01", "7", "7", "Casa de Força", "U07", "108", "C-D"],
-            ["UTR508", "A08R01", "8", "8", "Casa de Força", "U08", "108", "C-D"],
-            ["UTR509", "A09R01", "9", "9", "Casa de Força", "U09", "108", "C-D"],
-            ["UTR610", "B10R01", "10", "10", "Casa de Força", "U10", "108", "C-D"],
-            ["UTR611", "B11R01", "11", "11", "Casa de Força", "U11", "108", "C-D"],
-            ["UTR612", "B12R01", "12", "12", "Casa de Força", "U12", "108", "C-D"],
-            ["UTR613", "B13R01", "13", "13", "Casa de Força", "U13", "108", "C-D"],
-            ["UTR614", "B14R01", "14", "14", "Casa de Força", "U14", "108", "C-D"],
-            ["UTR615", "B15R01", "15", "15", "Casa de Força", "U15", "108", "C-D"],
-            ["UTR616", "B16R01", "16", "16", "Casa de Força", "U16", "108", "C-D"],
-            ["UTR617", "B17R01", "17", "17", "Casa de Força", "U17", "108", "C-D"],
-            ["UTR618", "B18R01", "18", "18", "Casa de Força", "U18", "108", "C-D"],
-            ["UTR520", "C45A01", "20", "19", "GIS", "U02", "124", "A-B"],
-            ["UTR520-1", "C45A02", "21", "20", "GIS", "U03", "124", "A-B"],
-            ["UTR521", "C45A03", "22", "21", "GIS", "U05", "124", "A-B"],
-            ["UTR522", "C45A04", "23", "22", "GIS", "U08", "124", "A-B"],
-            ["UTR620", "D45A01", "24", "23", "GIS", "U12", "124", "A-B"],
-            ["UTR621", "D45A02", "25", "24", "GIS", "U14", "124", "A-B"],
-            ["UTR622", "D45A03", "26", "25", "GIS", "U16", "124", "A-B"],
-            ["UTR622-1", "D45A04", "27", "26", "GIS", "U17", "124", "A-B"],
-            ["UTR530", "J61A01", "30", "27", "Casa de Força", "U3", "115", "C-D"],
-            ["UTR531", "J61A02", "31", "28", "Casa de Força", "U8", "115", "C-D"],
-            ["UTR532", "J61A03", "32", "29", "Casa de Força", "AMD2", "127.6", "C-D"],
-            ["UTR533", "J61A04", "33", "30", "Casa de Força", "AMD3", "144.5", "A-B"],
-            ["UTR534", "J61A05", "34", "31", "Casa de Força", "U7", "127.6", "C-D"],
-            ["UTR534-1", "J61A06", "35", "32", "GIS", "U9A", "132", "A-B"],
-            ["UTR630", "K61A01", "36", "33", "Casa de Força", "U12", "115", "C-D"],
-            ["UTR631", "K61A02", "37", "34", "Casa de Força", "AMC2", "127.6", "C-D"],
-            ["UTR632", "K61A03", "38", "35", "Casa de Força", "U16", "115", "C-D"],
-            ["UTR633", "K61A04", "39", "36", "Casa de Força", "AMC1", "144.5", "A-B"],
-            ["UTR634", "K61A05", "40", "37", "Casa de Força", "U15", "115", "C-D"],
-            ["UTR540", "J61A07", "41", "38", "Barragem", "U3", "214", ""],
-            ["UTR541", "J61A08", "42", "39", "Barragem", "U9", "144.5", ""],
-            ["UTR640", "K61A06", "43", "40", "Barragem", "U13", "214", ""],
-            ["UTR641", "K61A07", "44", "41", "Barragem", "U16", "214", ""],
-            ["UTR641", "K61A07", "44", "41", "Barragem", "U16", "214", ""],
-            ["UTR501-1", "A01R02", "51", "43", "Casa de Força", "U01", "98", "A-B"],
-            ["UTR502-1", "A02R02", "52", "44", "Casa de Força", "U02", "98", "A-B"],
-            ["UTR503-1", "A03R02", "53", "45", "Casa de Força", "U03", "98", "A-B"],
-            ["UTR504-1", "A04R02", "54", "46", "Casa de Força", "U04", "98", "A-B"],
-            ["UTR505-1", "A05R02", "55", "47", "Casa de Força", "U05", "98", "A-B"],
-            ["UTR506-1", "A06R02", "56", "48", "Casa de Força", "U06", "98", "A-B"],
-            ["UTR507-1", "A07R02", "57", "49", "Casa de Força", "U07", "98", "A-B"],
-            ["UTR508-1", "A08R02", "58", "50", "Casa de Força", "U08", "98", "A-B"],
-            ["UTR509-1", "A09R02", "59", "51", "Casa de Força", "U09", "98", "A-B"],
-            ["UTR610-1", "B10R02", "60", "52", "Casa de Força", "U10", "98", "A-B"],
-            ["UTR611-1", "B11R02", "61", "53", "Casa de Força", "U11", "98", "A-B"],
-            ["UTR612-1", "B12R02", "62", "54", "Casa de Força", "U12", "98", "A-B"],
-            ["UTR613-1", "B13R02", "63", "55", "Casa de Força", "U13", "98", "A-B"],
-            ["UTR614-1", "B14R02", "64", "56", "Casa de Força", "U14", "98", "A-B"],
-            ["UTR615-1", "B15R02", "65", "57", "Casa de Força", "U15", "98", "A-B"],
-            ["UTR616-1", "B16R02", "66", "58", "Casa de Força", "U16", "98", "A-B"],
-            ["UTR617-1", "B17R02", "67", "59", "Casa de Força", "U17", "98", "A-B"],
-            ["UTR618-1", "B18R02", "68", "60", "Casa de Força", "U18", "98", "A-B"],
-            ["UTR550", "H20A01", "80", "62", "Vertedouro", "", "214", ""],
-            ["UTR570-2", "T75A04", "81", "63", "Casa de Força", "U10", "131", "C-D"],
-            ["UTR670-1", "T75A05", "82", "64", "Casa de Força", "U9A", "131", "C-D"],
-            ["UTR570-1", "T75A03", "84", "70", "Casa de Força", "U9A", "131", "C-D"],
-            ["UTR670-2", "T75A06", "87", "71", "Casa de Força", "U10", "131", "C-D"],
-        ]
-
-        self.table.setRowCount(len(data))
-        for row_index, row_data in enumerate(data):
-            for column_index, cell_data in enumerate(row_data):
-                self.table.setItem(
-                    row_index, column_index, QTableWidgetItem(str(cell_data))
-                )
+        self.populate_table(self.table, RTU_DATA)
 
     def populate_second_table(self):
-        data = [
-            ["Azul", "Preto", "1", "11", "I", "Rosa"],
-            ["Vermelho", "Branco", "1", "12", "I", "Rosa"],
-            ["Cinza", "Preto", "2", "13", "I", "Rosa"],
-            ["Amarelo", "Branco", "2", "14", "I", "Rosa"],
-            ["Verde", "Preto", "3", "15", "I", "Rosa"],
-            ["Marrom", "Branco", "3", "16", "I", "Rosa"],
-            ["Preto", "Preto", "4", "17", "I", "Rosa"],
-            ["Branco", "Branco", "4", "18", "I", "Rosa"],
-            ["Ciano", "-", "-", "19", "I", "Rosa"],
-            ["Azul", "Preto", "5", "21", "II", "Rosa"],
-            ["Vermelho", "Branco", "5", "22", "II", "Rosa"],
-            ["Cinza", "Preto", "6", "23", "II", "Rosa"],
-            ["Amarelo", "Branco", "6", "24", "II", "Rosa"],
-            ["Verde", "Preto", "7", "25", "II", "Rosa"],
-            ["Marrom", "Branco", "7", "26", "II", "Rosa"],
-            ["Preto", "Preto", "8", "27", "II", "Rosa"],
-            ["Branco", "Branco", "8", "28", "II", "Rosa"],
-            ["Ciano", "-", "-", "29", "II", "Rosa"],
-            ["Azul", "Preto", "9", "31", "III", "Rosa"],
-            ["Vermelho", "Branco", "9", "32", "III", "Rosa"],
-            ["Cinza", "Preto", "10", "33", "III", "Rosa"],
-            ["Amarelo", "Branco", "10", "34", "III", "Rosa"],
-            ["Verde", "Preto", "11", "35", "III", "Rosa"],
-            ["Marrom", "Branco", "11", "36", "III", "Rosa"],
-            ["Preto", "Preto", "12", "37", "III", "Rosa"],
-            ["Branco", "Branco", "12", "38", "III", "Rosa"],
-            ["Ciano", "-", "-", "39", "III", "Rosa"],
-            ["Azul", "Preto", "13", "41", "IV", "Rosa"],
-            ["Vermelho", "Branco", "13", "42", "IV", "Rosa"],
-            ["Cinza", "Preto", "14", "43", "IV", "Rosa"],
-            ["Amarelo", "Branco", "14", "44", "IV", "Rosa"],
-            ["Verde", "Preto", "15", "45", "IV", "Rosa"],
-            ["Marrom", "Branco", "15", "46", "IV", "Rosa"],
-            ["Preto", "Preto", "16", "47", "IV", "Rosa"],
-            ["Branco", "Branco", "16", "48", "IV", "Rosa"],
-            ["Ciano", "-", "-", "49", "IV", "Rosa"],
-            ["-", "-", "17-20", "51-59", "I", "Laranja"],
-            ["-", "-", "21-24", "61-99", "II", "Laranja"],
-            ["-", "-", "25-28", "71-79", "III", "Laranja"],
-            ["-", "-", "29-32", "81-89", "IV", "Laranja"],
-            ["-", "-", "33-36", "91-99", "I", "Violeta"],
-            ["-", "-", "37-40", "01-09", "II", "Violeta"],
-        ]
+        self.populate_table(self.second_table, CABLE_COLOR_DATA)
 
-        self.second_table.setRowCount(len(data))
+    def populate_table(self, table, data):
+        table.setRowCount(len(data))
         for row_index, row_data in enumerate(data):
             for column_index, cell_data in enumerate(row_data):
-                self.second_table.setItem(
-                    row_index, column_index, QTableWidgetItem(str(cell_data))
-                )
+                table.setItem(row_index, column_index, QTableWidgetItem(str(cell_data)))
 
 
 def main():

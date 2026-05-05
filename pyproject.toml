@@ -1,0 +1,16 @@
+[project]
+name = "hitachi-nmr5-bibyte-java2qt6-port"
+version = "0.1.0"
+description = "PyQt6 port of the BiByte Java utility."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "PyQt6>=6.10,<7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3,<10",
+    "ruff>=0.13,<0.14",
+    "ty>=0.0.1a23",
+]
