@@ -29,8 +29,9 @@ class AnalogGraph(QWidget):
     def __init__(self):
         super().__init__()
         self._result = AnalogResult(12.0, -2.5, 10.0, 19660, "0x4ccc", 50.0, 60.0)
-        self.setMinimumSize(260, 96)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setMinimumSize(260, 48)
+        self.setMaximumHeight(56)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     def set_result(self, result):
         self._result = result
@@ -41,7 +42,7 @@ class AnalogGraph(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        bar_rect = QRectF(16, 42, self.width() - 32, 16)
+        bar_rect = QRectF(14, 18, self.width() - 28, 14)
         if bar_rect.width() <= 0 or bar_rect.height() <= 0:
             return
 
@@ -61,33 +62,18 @@ class AnalogGraph(QWidget):
 
         painter.setPen(QPen(QColor("#555b61"), 1))
         painter.drawRoundedRect(bar_rect, 4, 4)
-        painter.fillRect(fill_rect, fill_color)
+        painter.setBrush(fill_color)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawRoundedRect(fill_rect, 4, 4)
 
         painter.setPen(QPen(QColor("#f1f3f5"), 2))
-        painter.drawLine(int(marker_x), int(bar_rect.top()) - 6, int(marker_x), int(bar_rect.bottom()) + 6)
+        painter.drawLine(
+            int(marker_x),
+            int(bar_rect.top()) - 6,
+            int(marker_x),
+            int(bar_rect.bottom()) + 6,
+        )
         painter.drawEllipse(int(marker_x) - 3, int(bar_rect.center().y()) - 3, 6, 6)
-
-        painter.setPen(QPen(QColor("#f1f3f5"), 1))
-        painter.drawText(16, 20, f"{self._result.current_ma:.4g} mA")
-        painter.drawText(
-            int(self.width() * 0.42),
-            20,
-            f"{self._result.raw_int16} / {self._result.raw_hex16}",
-        )
-        painter.drawText(
-            int(self.width() * 0.42),
-            84,
-            f"{self._result.range_percent:.1f}% range",
-        )
-        if out_of_scale:
-            painter.setPen(QPen(QColor("#e08f2a"), 1))
-            painter.drawText(16, 84, "FORA ESCALA")
-        else:
-            painter.drawText(16, 84, f"{self._result.raw_percent:.1f}% raw")
-
-        painter.setPen(QPen(QColor("#b8c0c7"), 1))
-        painter.drawText(int(bar_rect.left()), int(bar_rect.bottom()) + 16, "0")
-        painter.drawText(int(bar_rect.right()) - 34, int(bar_rect.bottom()) + 16, "32767")
 
 
 class App(QMainWindow):
@@ -109,6 +95,7 @@ class App(QMainWindow):
         controls_panel.setMaximumWidth(640)
         controls_layout = QVBoxLayout(controls_panel)
         controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setSpacing(6)
         self.setupInitialComponents(controls_layout)
         self.setupSecondTable(controls_layout)
         layout.addWidget(controls_panel, 0)
@@ -158,8 +145,12 @@ class App(QMainWindow):
 
     def setupAnalogPanel(self, layout):
         analog_box = QGroupBox("Analogico Raw Counts BIAS/SCALE v1.12")
+        analog_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         analog_layout = QVBoxLayout(analog_box)
+        analog_layout.setSpacing(6)
         analog_form_layout = QGridLayout()
+        analog_form_layout.setHorizontalSpacing(6)
+        analog_form_layout.setVerticalSpacing(6)
         analog_layout.addLayout(analog_form_layout)
         layout.addWidget(analog_box)
 
@@ -173,6 +164,12 @@ class App(QMainWindow):
         self.analog_scale = QLabel("--")
         self.analog_raw_int = QLabel("--")
         self.analog_raw_hex = QLabel("--")
+        self.analog_primary_hex = QLabel("--")
+        self.analog_primary_hex.setObjectName("analogPrimaryValue")
+        self.analog_primary_int = QLabel("--")
+        self.analog_primary_int.setObjectName("analogPrimaryIntValue")
+        self.analog_status = QLabel("--")
+        self.analog_status.setObjectName("analogStatusOk")
         self.analog_graph = AnalogGraph()
 
         fields = [
@@ -197,6 +194,11 @@ class App(QMainWindow):
             analog_form_layout.addWidget(QLabel(label), row, 2)
             analog_form_layout.addWidget(value_label, row, 3)
 
+        primary_layout = QHBoxLayout()
+        primary_layout.addWidget(self.analog_primary_hex, 3)
+        primary_layout.addWidget(self.analog_primary_int, 2)
+        analog_layout.addLayout(primary_layout)
+        analog_layout.addWidget(self.analog_status)
         analog_layout.addWidget(self.analog_graph)
         analog_button = QPushButton("Calcular analogico")
         analog_button.clicked.connect(lambda: self.calculate_analog())
@@ -205,6 +207,7 @@ class App(QMainWindow):
 
     def setupMainTable(self, layout):
         panel = QWidget()
+        panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         panel_layout = QVBoxLayout(panel)
         panel_layout.setContentsMargins(0, 0, 0, 0)
         self.createButton("Localizacao das UTRs", self.focus_main_table, panel_layout)
@@ -251,12 +254,12 @@ class App(QMainWindow):
         self.second_table.setColumnCount(6)
         self.second_table.setHorizontalHeaderLabels(
             [
-                "Cor (Colorido)",
-                "Cor (P&B)",
+                "Cor",
+                "P&B",
                 "Par",
                 "Fio",
-                "Grupo Anilha",
-                "Cor da Anilha",
+                "Anilha",
+                "Cor an.",
             ]
         )
         panel_layout.addWidget(self.second_table)
@@ -274,6 +277,8 @@ class App(QMainWindow):
         header = self.second_table.horizontalHeader()
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
             header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
         layout.addWidget(panel)
 
@@ -306,6 +311,24 @@ class App(QMainWindow):
         self.analog_scale.setText(f"{result.scale:.6g}")
         self.analog_raw_int.setText(str(result.raw_int16))
         self.analog_raw_hex.setText(result.raw_hex16)
+        self.analog_primary_hex.setText(f"0x{result.raw_hex16[2:].upper()}")
+        self.analog_primary_int.setText(f"INT16 {result.raw_int16}")
+        if result.raw_int16 < 0 or result.raw_int16 > 32767:
+            self.analog_status.setObjectName("analogStatusWarning")
+            self.analog_status.setText(
+                f"FORA ESCALA | {result.current_ma:.4g} mA | "
+                f"{result.range_percent:.1f}% range | {result.raw_percent:.1f}% raw"
+            )
+        else:
+            self.analog_status.setObjectName("analogStatusOk")
+            self.analog_status.setText(
+                f"{result.current_ma:.4g} mA | "
+                f"{result.range_percent:.1f}% range | {result.raw_percent:.1f}% raw"
+            )
+        status_style = self.analog_status.style()
+        if status_style is not None:
+            status_style.unpolish(self.analog_status)
+            status_style.polish(self.analog_status)
         self.analog_graph.set_result(result)
 
     def focus_main_table(self):

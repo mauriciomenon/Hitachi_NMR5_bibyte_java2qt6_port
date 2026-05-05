@@ -23,6 +23,37 @@ QLabel {
     color: #f1f3f5;
 }
 
+QLabel#analogPrimaryValue {
+    background: #101214;
+    border: 1px solid #2da9e9;
+    border-radius: 4px;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 8px;
+}
+
+QLabel#analogPrimaryIntValue {
+    background: #151719;
+    border: 1px solid #3b3f43;
+    border-radius: 4px;
+    color: #dbe3ea;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px;
+}
+
+QLabel#analogStatusOk {
+    color: #b8c0c7;
+    padding: 2px 4px;
+}
+
+QLabel#analogStatusWarning {
+    color: #ffb454;
+    font-weight: 700;
+    padding: 2px 4px;
+}
+
 QLineEdit {
     background: #16181a;
     border: 1px solid #4b5158;
@@ -68,10 +99,6 @@ QHeaderView::section {
     border-bottom: 1px solid #4c535a;
     padding: 6px 8px;
     font-weight: 600;
-}
-
-QSplitter::handle {
-    background: #343a40;
 }
 
 QScrollBar:vertical, QScrollBar:horizontal {
