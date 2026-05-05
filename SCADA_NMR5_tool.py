@@ -94,10 +94,11 @@ class AnalogPanel(QGroupBox):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         analog_layout = QVBoxLayout(self)
-        analog_layout.setSpacing(4)
+        analog_layout.setSpacing(3)
         analog_form_layout = QGridLayout()
-        analog_form_layout.setHorizontalSpacing(4)
-        analog_form_layout.setVerticalSpacing(4)
+        analog_form_layout.setHorizontalSpacing(3)
+        analog_form_layout.setVerticalSpacing(3)
+        analog_form_layout.setContentsMargins(0, 0, 0, 0)
         analog_layout.addLayout(analog_form_layout)
 
         self.analog_lim_inf = QLineEdit("4")
