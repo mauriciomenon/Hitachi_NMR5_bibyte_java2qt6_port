@@ -12,20 +12,23 @@ def test_calculate_analog_defaults_match_rawcounts_v12():
     result = calculate_analog(4, 20, 0, 10, 5)
 
     assert result.current_ma == 12.0
+    assert result.measured_value == 5.0
     assert result.bias == -2.5
-    assert result.scale == 10
+    assert result.scale == 12.5
     assert result.raw_int16 == 19660
     assert result.raw_hex16 == "0x4ccc"
     assert result.range_percent == 50.0
     assert result.raw_percent == pytest.approx(60.0, abs=0.01)
+    assert result.out_of_scale is False
 
 
 def test_calculate_analog_scaled_range_keeps_v12_formula():
     result = calculate_analog(4, 20, 0, 100, 50)
 
     assert result.current_ma == 12.0
+    assert result.measured_value == 50.0
     assert result.bias == -25.0
-    assert result.scale == 100
+    assert result.scale == 125.0
     assert result.raw_int16 == 19660
     assert result.raw_hex16 == "0x4ccc"
     assert result.range_percent == 50.0
@@ -36,6 +39,7 @@ def test_calculate_analog_uses_configured_current_limits():
     result = calculate_analog(0, 10, 0, 100, 5)
 
     assert result.current_ma == 0.5
+    assert result.measured_value == 5.0
     assert result.bias == 0.0
     assert result.scale == 100
     assert result.raw_int16 == 1638
@@ -49,6 +53,42 @@ def test_calculate_analog_formats_negative_raw_as_hex16():
 
     assert result.raw_int16 < 0
     assert result.raw_hex16 == "0xe667"
+    assert result.out_of_scale is True
+
+
+def test_calculate_analog_from_current_ma():
+    result = calculate_analog(4, 20, 0, 10, 12, "current_ma")
+
+    assert result.measured_value == 5.0
+    assert result.current_ma == 12.0
+    assert result.raw_int16 == 19660
+    assert result.raw_hex16 == "0x4ccc"
+
+
+def test_calculate_analog_from_raw_int16():
+    result = calculate_analog(4, 20, 0, 10, 19660, "raw_int16")
+
+    assert result.measured_value == pytest.approx(4.999, abs=0.01)
+    assert result.current_ma == pytest.approx(12.0, abs=0.01)
+    assert result.raw_int16 == 19660
+    assert result.raw_hex16 == "0x4ccc"
+
+
+def test_calculate_analog_from_raw_hex16():
+    result = calculate_analog(4, 20, 0, 10, "0x4ccc", "raw_hex16")
+
+    assert result.measured_value == pytest.approx(4.999, abs=0.01)
+    assert result.current_ma == pytest.approx(12.0, abs=0.01)
+    assert result.raw_int16 == 19660
+    assert result.raw_hex16 == "0x4ccc"
+
+
+def test_calculate_analog_from_negative_hex16():
+    result = calculate_analog(4, 20, 0, 10, "0xe667", "raw_hex16")
+
+    assert result.raw_int16 == -6553
+    assert result.raw_hex16 == "0xe667"
+    assert result.out_of_scale is True
 
 
 def test_calculate_analog_rejects_zero_range_span():
