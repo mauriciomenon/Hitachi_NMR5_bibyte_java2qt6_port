@@ -94,25 +94,37 @@ class AnalogPanel(QGroupBox):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         analog_layout = QVBoxLayout(self)
-        analog_layout.setSpacing(6)
+        analog_layout.setSpacing(4)
         analog_form_layout = QGridLayout()
-        analog_form_layout.setHorizontalSpacing(6)
-        analog_form_layout.setVerticalSpacing(6)
+        analog_form_layout.setHorizontalSpacing(4)
+        analog_form_layout.setVerticalSpacing(4)
         analog_layout.addLayout(analog_form_layout)
 
         self.analog_lim_inf = QLineEdit("4")
+        self.analog_lim_inf.setObjectName("analogInputNarrow")
         self.analog_lim_sup = QLineEdit("20")
+        self.analog_lim_sup.setObjectName("analogInputNarrow")
         self.analog_range_inf = QLineEdit("0")
+        self.analog_range_inf.setObjectName("analogInputNarrow")
         self.analog_range_sup = QLineEdit("10")
+        self.analog_range_sup.setObjectName("analogInputNarrow")
         self.analog_measured = QLineEdit("5")
+        self.analog_measured.setObjectName("analogInputWide")
         self.analog_input_mode = QComboBox()
         self.analog_input_mode.addItems(["Medido", "mA", "INT16", "HEX16"])
+        self.analog_input_mode.setObjectName("analogInputMode")
         self.analog_current = QLabel("--")
+        self.analog_current.setObjectName("analogOutputValue")
         self.analog_measured_result = QLabel("--")
+        self.analog_measured_result.setObjectName("analogOutputValue")
         self.analog_bias = QLabel("--")
+        self.analog_bias.setObjectName("analogOutputValue")
         self.analog_scale = QLabel("--")
+        self.analog_scale.setObjectName("analogOutputValue")
         self.analog_raw_int = QLabel("--")
+        self.analog_raw_int.setObjectName("analogOutputValue")
         self.analog_raw_hex = QLabel("--")
+        self.analog_raw_hex.setObjectName("analogOutputValue")
         self.analog_primary_hex = QLabel("--")
         self.analog_primary_hex.setObjectName("analogPrimaryValue")
         self.analog_primary_int = QLabel("--")
@@ -134,7 +146,7 @@ class AnalogPanel(QGroupBox):
             analog_form_layout.addWidget(field, row, 1)
 
         result_labels = [
-            ("MEDIDO", self.analog_measured_result),
+            ("Medido", self.analog_measured_result),
             ("mA", self.analog_current),
             ("BIAS", self.analog_bias),
             ("SCALE", self.analog_scale),
