@@ -41,6 +41,13 @@ Este projeto consolida duas bases de autoria de Mauricio Menon:
   - Observacao: no repo o launcher local principal pode ficar apontando v1.9; neste
     port a formula e formato final usam o comportamento da v1.12.
 
+Repos relacionados ao mesmo contexto operacional:
+
+- SCADA: `https://github.com/mauriciomenon/SCADA`
+- SCADA Preventiva: `https://github.com/mauriciomenon/SCADA_Preventiva`
+- SSA Consulta Rapida: `https://github.com/mauriciomenon/SSA_Consulta_Rapida`
+- NMR5 DB Web: `https://github.com/mauriciomenon/nmr5dbweb`
+
 ## Requisitos
 
 - `uv`
