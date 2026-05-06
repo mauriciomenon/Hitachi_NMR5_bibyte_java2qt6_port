@@ -29,15 +29,12 @@ uv run python SCADA_NMR5_tool.py
 Este projeto consolida duas bases de autoria de Mauricio Menon:
 
 - Porta PyQt6 atual:
-  - Local: `/Users/menon/git/Hitachi_NMR5_bibyte_java2qt6_port`
   - Remoto: `https://github.com/mauriciomenon/Hitachi_NMR5_bibyte_java2qt6_port`
 - Origem Java BitByte/PTNO:
-  - Local: `/Users/menon/git/BiByte_java`
   - Remoto: `https://github.com/mauriciomenon/BiByte_java`
   - Referencia funcional: regras de conversao BitByte/PTNO e tabelas de UTRs/cabos.
   - Historico relevante: aplicacao Swing/Java com builds Ant/Gradle e releases Java.
 - Origem analogica Raw Counts BIAS/SCALE:
-  - Local: `/Users/menon/git/RawCountsBIASscale`
   - Remoto: `https://github.com/mauriciomenon/RawCountsBIASscale`
   - Referencia funcional adotada neste port: `indicador_v1.12.py` (usado como base
     para os calculos e padrao de interface).
