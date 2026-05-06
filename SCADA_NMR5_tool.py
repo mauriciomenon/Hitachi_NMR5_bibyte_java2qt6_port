@@ -1,11 +1,10 @@
 import sys
 from pathlib import Path
 
-from analog_logic import AnalogResult, calculate_analog
+from analog_logic import calculate_analog
 from bitbyte_data import CABLE_COLOR_DATA, RTU_DATA
 from bitbyte_logic import bitbyte_from_ptno_result, ptno_from_bitbyte_result
-from PyQt6.QtGui import QColor, QPainter, QPen
-from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -24,91 +23,6 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QSizePolicy,
 )
-
-
-class AnalogGraph(QWidget):
-    def __init__(self):
-        super().__init__()
-        self._result = AnalogResult(
-            5.0,
-            12.0,
-            -2.5,
-            10.0,
-            19660,
-            "0x4ccc",
-            50.0,
-            60.0,
-            False,
-        )
-        self.setMinimumSize(260, 64)
-        self.setMaximumHeight(64)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
-    def set_result(self, result):
-        self._result = result
-        self.update()
-
-    def paintEvent(self, a0):
-        super().paintEvent(a0)
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        available_width = self.width() - 28
-        bar_width = max(160, available_width)
-        bar_left = (self.width() - bar_width) / 2
-        bar_rect = QRectF(bar_left, 34, bar_width, 12)
-        if bar_rect.width() <= 0 or bar_rect.height() <= 0:
-            return
-
-        painter.fillRect(self.rect(), QColor("#151515"))
-
-        raw_fraction = self._result.raw_int16 / 32767
-        clamped_fraction = max(0.0, min(raw_fraction, 1.0))
-        marker_x = bar_rect.left() + clamped_fraction * bar_rect.width()
-        fill_rect = QRectF(
-            bar_rect.left(),
-            bar_rect.top(),
-            marker_x - bar_rect.left(),
-            bar_rect.height(),
-        )
-        fill_color = (
-            QColor("#b07a42") if self._result.out_of_scale else QColor("#7f946f")
-        )
-
-        painter.setPen(QPen(QColor("#555b61"), 1))
-        painter.drawRoundedRect(bar_rect, 4, 4)
-        painter.setBrush(fill_color)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawRoundedRect(fill_rect, 4, 4)
-
-        painter.setPen(QPen(QColor("#f1f3f5"), 2))
-        painter.drawLine(
-            int(marker_x),
-            int(bar_rect.top()),
-            int(marker_x),
-            int(bar_rect.bottom()),
-        )
-        painter.drawEllipse(int(marker_x) - 3, int(bar_rect.center().y()) - 3, 6, 6)
-
-        legend_font = painter.font()
-        legend_font.setPointSize(7)
-        painter.setFont(legend_font)
-        legend_text = f"BIAS {self._result.bias:.4g}   SCALE {self._result.scale:.4g}"
-        if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 8:
-            legend_text = f"B {self._result.bias:.3g}   S {self._result.scale:.3g}"
-        legend_rect = QRectF(
-            bar_rect.left(),
-            10,
-            bar_rect.width(),
-            18,
-        )
-        painter.fillRect(legend_rect, QColor(22, 24, 26, 210))
-        painter.setPen(QPen(QColor("#d8dde3"), 1))
-        painter.drawText(
-            legend_rect,
-            Qt.AlignmentFlag.AlignCenter,
-            legend_text,
-        )
 
 
 class AnalogPanel(QGroupBox):
@@ -150,7 +64,6 @@ class AnalogPanel(QGroupBox):
         self.analog_primary_int.setObjectName("analogPrimaryIntValue")
         self.analog_status = QLabel("--")
         self.analog_status.setObjectName("analogStatusOk")
-        self.analog_graph = AnalogGraph()
 
         self.preset_4_20 = QPushButton("4-20 mA")
         self.preset_4_20.setObjectName("analogPresetButton")
@@ -159,6 +72,14 @@ class AnalogPanel(QGroupBox):
         self.preset_0_20 = QPushButton("0-20 mA")
         self.preset_0_20.setObjectName("analogPresetButton")
         self.preset_0_20.clicked.connect(self.apply_0_20_preset)
+        self.analog_button = self.create_compact_button("Calcular", 84)
+        self.analog_button.clicked.connect(lambda: self.calculate_analog())
+        self.analog_lim_inf.setFixedWidth(58)
+        self.analog_lim_sup.setFixedWidth(58)
+        self.analog_range_inf.setFixedWidth(58)
+        self.analog_range_sup.setFixedWidth(58)
+        self.analog_input_mode.setFixedWidth(88)
+        self.analog_measured.setFixedWidth(82)
 
         current_box = QGroupBox("Valores de corrente do transdutor (mA)")
         current_box.setObjectName("calcSection")
@@ -171,22 +92,45 @@ class AnalogPanel(QGroupBox):
 
         preset_layout = QHBoxLayout()
         preset_layout.setSpacing(8)
-        preset_layout.addWidget(self.preset_4_20)
+        preset_label = QLabel("Valores típicos:")
+        preset_label.setObjectName("analogPresetLabel")
+        preset_layout.addWidget(preset_label)
         preset_layout.addWidget(self.preset_0_20)
+        preset_layout.addWidget(self.preset_4_20)
         preset_layout.addStretch(1)
         current_layout.addLayout(preset_layout, 1, 0, 1, 4)
         analog_layout.addWidget(current_box)
 
         scale_box = QGroupBox("Escala do equipamento")
         scale_box.setObjectName("calcSection")
-        scale_layout = QGridLayout(scale_box)
-        scale_layout.setHorizontalSpacing(8)
-        scale_layout.setVerticalSpacing(6)
+        scale_layout = QVBoxLayout(scale_box)
+        scale_layout.setSpacing(7)
         scale_layout.setContentsMargins(10, 10, 10, 10)
-        self.add_analog_field(scale_layout, 0, 0, "Range inf", self.analog_range_inf)
-        self.add_analog_field(scale_layout, 0, 2, "Range sup", self.analog_range_sup)
-        self.add_analog_field(scale_layout, 1, 0, "Entrada", self.analog_input_mode)
-        self.add_analog_field(scale_layout, 1, 2, "Valor", self.analog_measured)
+
+        range_row = QHBoxLayout()
+        range_row.setSpacing(8)
+        range_row.addWidget(self.create_inline_label("Range inf", 56))
+        range_row.addWidget(self.analog_range_inf)
+        range_row.addSpacing(10)
+        range_row.addWidget(self.create_inline_label("Range sup", 58))
+        range_row.addWidget(self.analog_range_sup)
+        range_row.addStretch(1)
+        scale_layout.addLayout(range_row)
+
+        input_row = QHBoxLayout()
+        input_row.setSpacing(7)
+        input_row.addWidget(self.create_inline_label("Entrada", 44))
+        input_row.addWidget(self.analog_input_mode)
+        input_row.addSpacing(10)
+        input_row.addWidget(self.create_inline_label("Valor", 34))
+        input_row.addWidget(self.analog_measured)
+        input_row.addStretch(1)
+        scale_layout.addLayout(input_row)
+
+        button_row = QHBoxLayout()
+        button_row.addStretch(1)
+        button_row.addWidget(self.analog_button)
+        scale_layout.addLayout(button_row)
         analog_layout.addWidget(scale_box)
 
         result_box = QGroupBox("Resultado")
@@ -195,8 +139,13 @@ class AnalogPanel(QGroupBox):
         result_layout.setHorizontalSpacing(8)
         result_layout.setVerticalSpacing(4)
         result_layout.setContentsMargins(10, 10, 10, 10)
+        primary_layout = QHBoxLayout()
+        primary_layout.setSpacing(6)
+        primary_layout.addWidget(self.analog_primary_hex, 1)
+        primary_layout.addWidget(self.analog_primary_int, 1)
+        result_layout.addLayout(primary_layout, 0, 0, 1, 2)
         result_labels = [
-            ("Med", self.analog_measured_result),
+            ("Medido", self.analog_measured_result),
             ("mA", self.analog_current),
             ("BIAS", self.analog_bias),
             ("SCALE", self.analog_scale),
@@ -206,22 +155,11 @@ class AnalogPanel(QGroupBox):
         for row, (label, value_label) in enumerate(result_labels):
             result_label = QLabel(label)
             result_label.setObjectName("analogResultLabel")
-            result_layout.addWidget(result_label, row, 0)
-            result_layout.addWidget(value_label, row, 1)
+            result_layout.addWidget(result_label, row + 1, 0)
+            result_layout.addWidget(value_label, row + 1, 1)
         analog_layout.addWidget(result_box)
 
-        primary_layout = QHBoxLayout()
-        primary_layout.setSpacing(6)
-        primary_layout.setContentsMargins(0, 3, 0, 0)
-        primary_layout.addWidget(self.analog_primary_hex, 3)
-        primary_layout.addWidget(self.analog_primary_int, 2)
-        analog_layout.addLayout(primary_layout)
         analog_layout.addWidget(self.analog_status)
-        analog_layout.addWidget(self.analog_graph)
-        analog_button = QPushButton("Calcular analogico")
-        analog_button.setObjectName("compactButton")
-        analog_button.clicked.connect(lambda: self.calculate_analog())
-        analog_layout.addWidget(analog_button)
         self.calculate_analog(show_warning=False)
 
     def add_analog_field(self, layout, row, column, text, field):
@@ -229,6 +167,18 @@ class AnalogPanel(QGroupBox):
         label.setObjectName("analogFieldLabel")
         layout.addWidget(label, row, column)
         layout.addWidget(field, row, column + 1)
+
+    def create_compact_button(self, text, width):
+        button = QPushButton(text)
+        button.setObjectName("compactButton")
+        button.setFixedWidth(width)
+        return button
+
+    def create_inline_label(self, text, width):
+        label = QLabel(text)
+        label.setObjectName("analogInlineLabel")
+        label.setFixedWidth(width)
+        return label
 
     def calculate_analog(self, show_warning=True):
         try:
@@ -262,7 +212,6 @@ class AnalogPanel(QGroupBox):
         if status_style is not None:
             status_style.unpolish(self.analog_status)
             status_style.polish(self.analog_status)
-        self.analog_graph.set_result(result)
 
     def apply_4_20_preset(self):
         self.apply_preset("4", "20", "0", "10", "5")
@@ -333,8 +282,8 @@ class SostatPanel(QGroupBox):
         buttons_layout.addStretch(1)
         ptno_button = self.createButton("PTNO", self.calcula_2, buttons_layout, compact=True)
         bitbyte_button = self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
-        ptno_button.setFixedWidth(92)
-        bitbyte_button.setFixedWidth(92)
+        ptno_button.setFixedWidth(84)
+        bitbyte_button.setFixedWidth(84)
         buttons_layout.addStretch(1)
         bitbyte_layout.addLayout(buttons_layout)
 
