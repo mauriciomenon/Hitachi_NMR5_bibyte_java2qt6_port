@@ -1,7 +1,7 @@
 QMainWindow, QWidget {
     background: #202224;
     color: #f1f3f5;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 QGroupBox {
@@ -42,8 +42,15 @@ QLabel#analogPrimaryIntValue {
     padding: 3px 5px;
 }
 
+QLabel#analogPresetLabel {
+    color: #c6ccd2;
+    font-size: 7px;
+    font-weight: 500;
+    margin-right: 4px;
+}
+
 QLabel#analogOutputValue {
-    font-size: 8px;
+    font-size: 7px;
 }
 
 QLabel#analogStatusOk {
@@ -66,22 +73,24 @@ QLineEdit {
 }
 
 QLineEdit#analogInputNarrow {
-    max-width: 42px;
-    min-width: 34px;
-    padding: 3px 5px;
+    max-width: 38px;
+    min-width: 30px;
+    padding: 2px 4px;
+    font-size: 9px;
 }
 
 QLineEdit#analogInputWide {
-    max-width: 70px;
-    min-width: 60px;
-    font-size: 10px;
-    padding: 3px 5px;
+    max-width: 58px;
+    min-width: 50px;
+    font-size: 9px;
+    padding: 2px 4px;
 }
 
 QComboBox#analogInputMode {
-    max-width: 70px;
-    min-width: 60px;
-    padding: 3px 5px;
+    max-width: 62px;
+    min-width: 52px;
+    font-size: 9px;
+    padding: 2px 4px;
 }
 
 QLineEdit:focus {
@@ -134,31 +143,31 @@ QHeaderView::section {
     border: 0;
     border-right: 1px solid #4c535a;
     border-bottom: 1px solid #4c535a;
-    padding: 3px 4px;
-    font-size: 9px;
+    padding: 2px 3px;
+    font-size: 8px;
     font-weight: 600;
 }
 
 QLineEdit#ptnoInput {
-    min-height: 21px;
-    max-width: 158px;
-    min-width: 140px;
-    font-size: 11px;
+    min-height: 20px;
+    max-width: 128px;
+    min-width: 110px;
+    font-size: 10px;
     padding: 3px 5px;
 }
 
 QLineEdit#ptnoResult {
     min-height: 20px;
-    max-width: 158px;
-    min-width: 140px;
-    font-size: 11px;
+    max-width: 128px;
+    min-width: 110px;
+    font-size: 10px;
     padding: 3px 5px;
 }
 
 QLineEdit#searchInput {
-    min-height: 22px;
-    max-width: 160px;
-    min-width: 130px;
+    min-height: 21px;
+    max-width: 128px;
+    min-width: 108px;
     font-size: 10px;
     padding: 3px 5px;
 }
