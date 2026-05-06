@@ -39,10 +39,10 @@ Este projeto consolida duas bases de autoria de Mauricio Menon:
 - Origem analogica Raw Counts BIAS/SCALE:
   - Local: `/Users/menon/git/RawCountsBIASscale`
   - Remoto: `https://github.com/mauriciomenon/RawCountsBIASscale`
-  - Referencia funcional adotada neste port: `indicador_v1.12.py`.
-  - Observacao: o repo nao tem release publicado no GitHub; `setup.py` ainda aponta
-    para `indicador_v1.9.py` com versao `19`, e existe artefato distribuido
-    `dist/ indicador_v1.9`.
+  - Referencia funcional adotada neste port: `indicador_v1.12.py` (usado como base
+    para os calculos e padrao de interface).
+  - Observacao: no repo o launcher local principal pode ficar apontando v1.9; neste
+    port a formula e formato final usam o comportamento da v1.12.
 
 ## Requisitos
 
