@@ -24,10 +24,10 @@ QLabel {
 }
 
 QLabel#analogPrimaryValue {
-    background: #101214;
-    border: 1px solid #2da9e9;
+    background: #151719;
+    border: 1px solid #3b3f43;
     border-radius: 4px;
-    color: #ffffff;
+    color: #dce3e8;
     font-size: 9px;
     font-weight: normal;
     padding: 3px 5px;
@@ -43,8 +43,21 @@ QLabel#analogPrimaryIntValue {
 }
 
 QLabel#analogOutputValue {
+    background: transparent;
+    color: #aeb6bd;
     font-size: 9px;
-    color: #d8dde3;
+    font-weight: 400;
+    padding: 1px 0;
+}
+
+QLabel#analogFieldLabel {
+    color: #e1e5e9;
+    font-weight: 500;
+}
+
+QLabel#analogResultLabel {
+    color: #c1c8ce;
+    font-weight: 500;
 }
 
 QLabel#analogStatusOk {
@@ -86,7 +99,7 @@ QComboBox#analogInputMode {
 }
 
 QLineEdit:focus {
-    border: 1px solid #2da9e9;
+    border: 1px solid #6a737b;
 }
 
 QPushButton {
@@ -141,6 +154,8 @@ QHeaderView::section {
 }
 
 QLineEdit#ptnoInput {
+    background: #121416;
+    border: 1px solid #5a6269;
     min-height: 26px;
     max-width: 10000px;
     min-width: 220px;
@@ -148,9 +163,10 @@ QLineEdit#ptnoInput {
     padding: 4px 9px;
 }
 
-QLineEdit#ptnoResult {
-    background: #181b1d;
-    border: 1px solid #343a40;
+QLabel#ptnoResult {
+    background: #17191b;
+    border: 1px solid #2f353a;
+    border-radius: 4px;
     color: #9aa3ab;
     min-height: 25px;
     max-width: 10000px;

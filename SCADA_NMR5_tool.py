@@ -72,7 +72,7 @@ class AnalogGraph(QWidget):
             bar_rect.height(),
         )
         fill_color = (
-            QColor("#e08f2a") if self._result.out_of_scale else QColor("#2da9e9")
+            QColor("#b07a42") if self._result.out_of_scale else QColor("#7f946f")
         )
 
         painter.setPen(QPen(QColor("#555b61"), 1))
@@ -174,7 +174,9 @@ class AnalogPanel(QGroupBox):
             ("Valor", self.analog_measured),
         ]
         for row, (label, field) in enumerate(fields):
-            analog_form_layout.addWidget(QLabel(label), row, 0)
+            field_label = QLabel(label)
+            field_label.setObjectName("analogFieldLabel")
+            analog_form_layout.addWidget(field_label, row, 0)
             analog_form_layout.addWidget(field, row, 1)
 
         preset_layout = QHBoxLayout()
@@ -193,7 +195,9 @@ class AnalogPanel(QGroupBox):
             ("HEX16", self.analog_raw_hex),
         ]
         for row, (label, value_label) in enumerate(result_labels, start=1):
-            analog_form_layout.addWidget(QLabel(label), row, 2)
+            result_label = QLabel(label)
+            result_label.setObjectName("analogResultLabel")
+            analog_form_layout.addWidget(result_label, row, 2)
             analog_form_layout.addWidget(value_label, row, 3)
 
         primary_layout = QHBoxLayout()
@@ -301,8 +305,7 @@ class SostatPanel(QGroupBox):
         bitbyte_layout.addLayout(entry_row)
         bitbyte_layout.addSpacing(3)
 
-        self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
-        self.entry_ptno_bitbyte_resultbox.setReadOnly(True)
+        self.entry_ptno_bitbyte_resultbox = QLabel("Resultado")
         self.entry_ptno_bitbyte_resultbox.setAlignment(
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         )
@@ -447,10 +450,10 @@ class App(QMainWindow):
             header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
             self.table.setColumnWidth(0, 62)
-            self.table.setColumnWidth(1, 54)
+            self.table.setColumnWidth(1, 62)
             self.table.setColumnWidth(2, 34)
             self.table.setColumnWidth(3, 28)
-            self.table.setColumnWidth(4, 130)
+            self.table.setColumnWidth(4, 122)
             self.table.setColumnWidth(5, 46)
             self.table.setColumnWidth(6, 52)
             self.table.setColumnWidth(7, 36)
