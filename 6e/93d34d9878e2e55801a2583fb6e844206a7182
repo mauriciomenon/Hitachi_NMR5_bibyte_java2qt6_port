@@ -1,0 +1,21 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "6e93d34d9878e2e55801a2583fb6e844206a7182",
+  "prompts": {
+    "6ffe40702933ad3a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex",
+      "messages": [],
+      "total_additions": 652,
+      "total_deletions": 82,
+      "accepted_lines": 923,
+      "overriden_lines": 0
+    }
+  }
+}
