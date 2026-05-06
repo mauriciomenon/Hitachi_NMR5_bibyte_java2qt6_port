@@ -117,11 +117,11 @@ class AnalogPanel(QGroupBox):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         analog_layout = QVBoxLayout(self)
-        analog_layout.setSpacing(2)
+        analog_layout.setSpacing(7)
         analog_form_layout = QGridLayout()
-        analog_form_layout.setHorizontalSpacing(3)
-        analog_form_layout.setVerticalSpacing(2)
-        analog_form_layout.setContentsMargins(0, 0, 0, 0)
+        analog_form_layout.setHorizontalSpacing(8)
+        analog_form_layout.setVerticalSpacing(5)
+        analog_form_layout.setContentsMargins(0, 4, 0, 0)
         analog_layout.addLayout(analog_form_layout)
 
         self.analog_lim_inf = QLineEdit("4")
@@ -165,13 +165,6 @@ class AnalogPanel(QGroupBox):
         self.preset_0_20.setObjectName("analogPresetButton")
         self.preset_0_20.clicked.connect(self.apply_0_20_preset)
 
-        preset_layout = QHBoxLayout()
-        preset_layout.setSpacing(4)
-        preset_layout.addWidget(self.preset_4_20)
-        preset_layout.addWidget(self.preset_0_20)
-        preset_layout.addStretch(1)
-        analog_layout.addLayout(preset_layout)
-
         fields = [
             ("Lim inf mA", self.analog_lim_inf),
             ("Lim sup mA", self.analog_lim_sup),
@@ -184,6 +177,13 @@ class AnalogPanel(QGroupBox):
             analog_form_layout.addWidget(QLabel(label), row, 0)
             analog_form_layout.addWidget(field, row, 1)
 
+        preset_layout = QHBoxLayout()
+        preset_layout.setSpacing(5)
+        preset_layout.addWidget(self.preset_4_20)
+        preset_layout.addWidget(self.preset_0_20)
+        preset_layout.addStretch(1)
+        analog_form_layout.addLayout(preset_layout, 0, 2, 1, 2)
+
         result_labels = [
             ("Med", self.analog_measured_result),
             ("mA", self.analog_current),
@@ -192,11 +192,13 @@ class AnalogPanel(QGroupBox):
             ("INT16", self.analog_raw_int),
             ("HEX16", self.analog_raw_hex),
         ]
-        for row, (label, value_label) in enumerate(result_labels):
+        for row, (label, value_label) in enumerate(result_labels, start=1):
             analog_form_layout.addWidget(QLabel(label), row, 2)
             analog_form_layout.addWidget(value_label, row, 3)
 
         primary_layout = QHBoxLayout()
+        primary_layout.setSpacing(6)
+        primary_layout.setContentsMargins(0, 3, 0, 0)
         primary_layout.addWidget(self.analog_primary_hex, 3)
         primary_layout.addWidget(self.analog_primary_int, 2)
         analog_layout.addLayout(primary_layout)
@@ -280,10 +282,10 @@ class SostatPanel(QGroupBox):
     def __init__(self):
         super().__init__("SOSTAT")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.setMaximumHeight(154)
+        self.setMaximumHeight(174)
         bitbyte_layout = QVBoxLayout(self)
-        bitbyte_layout.setContentsMargins(12, 12, 12, 12)
-        bitbyte_layout.setSpacing(7)
+        bitbyte_layout.setContentsMargins(16, 14, 16, 14)
+        bitbyte_layout.setSpacing(10)
 
         bitbyte_layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
 
@@ -292,21 +294,25 @@ class SostatPanel(QGroupBox):
         self.entry_input.setObjectName("ptnoInput")
         entry_row = QHBoxLayout()
         entry_row.setContentsMargins(0, 0, 0, 0)
-        entry_row.setSpacing(6)
+        entry_row.setSpacing(8)
         entry_row.addWidget(self.entry_input)
         clear_button = self.createButton("x", self.limpar_valores, entry_row, compact=True)
         clear_button.setFixedWidth(28)
         bitbyte_layout.addLayout(entry_row)
+        bitbyte_layout.addSpacing(3)
 
         self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
         self.entry_ptno_bitbyte_resultbox.setReadOnly(True)
-        self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.entry_ptno_bitbyte_resultbox.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         self.entry_ptno_bitbyte_resultbox.setObjectName("ptnoResult")
         bitbyte_layout.addWidget(self.entry_ptno_bitbyte_resultbox)
+        bitbyte_layout.addSpacing(3)
 
         buttons_layout = QHBoxLayout()
-        buttons_layout.setContentsMargins(0, 2, 0, 0)
-        buttons_layout.setSpacing(12)
+        buttons_layout.setContentsMargins(0, 4, 0, 0)
+        buttons_layout.setSpacing(14)
         buttons_layout.addStretch(1)
         ptno_button = self.createButton("PTNO", self.calcula_2, buttons_layout, compact=True)
         bitbyte_button = self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
@@ -325,7 +331,9 @@ class SostatPanel(QGroupBox):
     def limpar_valores(self):
         self.entry_input.clear()
         self.entry_ptno_bitbyte_resultbox.setText("Resultado")
-        self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.entry_ptno_bitbyte_resultbox.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
 
     def calcula_1(self):
         result, message, title = bitbyte_from_ptno_result(self.entry_input.text())
@@ -382,9 +390,12 @@ class App(QMainWindow):
         self.search_input.setPlaceholderText("Buscar nas tabelas")
         self.search_input.setObjectName("searchInput")
         search_layout = QHBoxLayout()
-        search_layout.setSpacing(3)
+        search_layout.setSpacing(8)
         search_layout.addWidget(self.search_input)
-        self.createButton("Ir", self.procurar_geral, search_layout, compact=True)
+        search_button = self.createButton(
+            "Ir", self.procurar_geral, search_layout, compact=True
+        )
+        search_button.setFixedWidth(42)
         tables_layout.addLayout(search_layout)
 
         tables_body_layout = QHBoxLayout()
@@ -435,15 +446,15 @@ class App(QMainWindow):
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
-            self.table.setColumnWidth(0, 70)
-            self.table.setColumnWidth(1, 58)
-            self.table.setColumnWidth(2, 40)
-            self.table.setColumnWidth(3, 30)
-            self.table.setColumnWidth(4, 94)
-            self.table.setColumnWidth(5, 50)
-            self.table.setColumnWidth(6, 58)
-            self.table.setColumnWidth(7, 40)
-        layout.addWidget(panel, 2)
+            self.table.setColumnWidth(0, 62)
+            self.table.setColumnWidth(1, 54)
+            self.table.setColumnWidth(2, 34)
+            self.table.setColumnWidth(3, 28)
+            self.table.setColumnWidth(4, 130)
+            self.table.setColumnWidth(5, 46)
+            self.table.setColumnWidth(6, 52)
+            self.table.setColumnWidth(7, 36)
+        layout.addWidget(panel, 3)
 
     def setupSecondTable(self, layout):
         panel = QWidget()
@@ -472,13 +483,13 @@ class App(QMainWindow):
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
-            self.second_table.setColumnWidth(0, 56)
-            self.second_table.setColumnWidth(1, 54)
-            self.second_table.setColumnWidth(2, 28)
-            self.second_table.setColumnWidth(3, 38)
-            self.second_table.setColumnWidth(4, 16)
-            self.second_table.setColumnWidth(5, 116)
-        layout.addWidget(panel, 1)
+            self.second_table.setColumnWidth(0, 68)
+            self.second_table.setColumnWidth(1, 60)
+            self.second_table.setColumnWidth(2, 30)
+            self.second_table.setColumnWidth(3, 34)
+            self.second_table.setColumnWidth(4, 14)
+            self.second_table.setColumnWidth(5, 70)
+        layout.addWidget(panel, 2)
 
     def createButton(self, text, function, layout, compact=False):
         button = QPushButton(text)
@@ -495,6 +506,7 @@ class App(QMainWindow):
         vertical_header = table.verticalHeader()
         if vertical_header is not None:
             vertical_header.setDefaultSectionSize(26)
+            vertical_header.setFixedWidth(28)
 
     def focus_main_table(self):
         self.table.setFocus()
