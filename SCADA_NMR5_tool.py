@@ -40,8 +40,8 @@ class AnalogGraph(QWidget):
             60.0,
             False,
         )
-        self.setMinimumSize(190, 56)
-        self.setMaximumHeight(56)
+        self.setMinimumSize(260, 64)
+        self.setMaximumHeight(64)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     def set_result(self, result):
@@ -53,10 +53,10 @@ class AnalogGraph(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        available_width = self.width() - 18
-        bar_width = max(18, int(available_width * 0.03))
+        available_width = self.width() - 28
+        bar_width = max(160, available_width)
         bar_left = (self.width() - bar_width) / 2
-        bar_rect = QRectF(bar_left, 26, bar_width, 12)
+        bar_rect = QRectF(bar_left, 34, bar_width, 12)
         if bar_rect.width() <= 0 or bar_rect.height() <= 0:
             return
 
@@ -91,20 +91,18 @@ class AnalogGraph(QWidget):
         painter.drawEllipse(int(marker_x) - 3, int(bar_rect.center().y()) - 3, 6, 6)
 
         legend_font = painter.font()
-        legend_font.setPointSize(6)
+        legend_font.setPointSize(7)
         painter.setFont(legend_font)
-        legend_text = f"B:{self._result.bias:.4g} S:{self._result.scale:.4g}"
-        if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 4:
-            legend_text = f"B:{self._result.bias:.3g} S:{self._result.scale:.3g}"
-        if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 4:
-            legend_text = f"B:{self._result.bias:.2g}"
+        legend_text = f"BIAS {self._result.bias:.4g}   SCALE {self._result.scale:.4g}"
+        if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 8:
+            legend_text = f"B {self._result.bias:.3g}   S {self._result.scale:.3g}"
         legend_rect = QRectF(
-            bar_rect.left() + 2,
-            bar_rect.top() + 1,
-            bar_rect.width() - 4,
-            bar_rect.height() - 2,
+            bar_rect.left(),
+            10,
+            bar_rect.width(),
+            18,
         )
-        painter.fillRect(legend_rect, QColor(22, 24, 26, 180))
+        painter.fillRect(legend_rect, QColor(22, 24, 26, 210))
         painter.setPen(QPen(QColor("#d8dde3"), 1))
         painter.drawText(
             legend_rect,
@@ -281,19 +279,23 @@ class AnalogPanel(QGroupBox):
 class SostatPanel(QGroupBox):
     def __init__(self):
         super().__init__("SOSTAT")
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setMaximumHeight(154)
         bitbyte_layout = QVBoxLayout(self)
-        bitbyte_layout.setContentsMargins(8, 8, 8, 8)
-        bitbyte_layout.setSpacing(4)
+        bitbyte_layout.setContentsMargins(12, 12, 12, 12)
+        bitbyte_layout.setSpacing(7)
 
         bitbyte_layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
 
         self.entry_input = QLineEdit()
+        self.entry_input.setPlaceholderText("Digite PTNO ou BitByte")
         self.entry_input.setObjectName("ptnoInput")
         entry_row = QHBoxLayout()
         entry_row.setContentsMargins(0, 0, 0, 0)
         entry_row.setSpacing(6)
         entry_row.addWidget(self.entry_input)
-        self.createButton("x", self.limpar_valores, entry_row, compact=True)
+        clear_button = self.createButton("x", self.limpar_valores, entry_row, compact=True)
+        clear_button.setFixedWidth(28)
         bitbyte_layout.addLayout(entry_row)
 
         self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
@@ -303,9 +305,14 @@ class SostatPanel(QGroupBox):
         bitbyte_layout.addWidget(self.entry_ptno_bitbyte_resultbox)
 
         buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(8)
-        self.createButton("PTNO", self.calcula_2, buttons_layout, compact=True)
-        self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
+        buttons_layout.setContentsMargins(0, 2, 0, 0)
+        buttons_layout.setSpacing(12)
+        buttons_layout.addStretch(1)
+        ptno_button = self.createButton("PTNO", self.calcula_2, buttons_layout, compact=True)
+        bitbyte_button = self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
+        ptno_button.setFixedWidth(92)
+        bitbyte_button.setFixedWidth(92)
+        buttons_layout.addStretch(1)
         bitbyte_layout.addLayout(buttons_layout)
 
     def createButton(self, text, function, layout, compact=False):

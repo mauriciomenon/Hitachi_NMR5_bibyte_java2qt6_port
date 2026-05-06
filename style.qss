@@ -140,19 +140,19 @@ QHeaderView::section {
 }
 
 QLineEdit#ptnoInput {
-    min-height: 21px;
-    max-width: 158px;
-    min-width: 140px;
+    min-height: 24px;
+    max-width: 10000px;
+    min-width: 220px;
     font-size: 11px;
-    padding: 3px 5px;
+    padding: 3px 7px;
 }
 
 QLineEdit#ptnoResult {
-    min-height: 20px;
-    max-width: 158px;
-    min-width: 140px;
+    min-height: 23px;
+    max-width: 10000px;
+    min-width: 220px;
     font-size: 11px;
-    padding: 3px 5px;
+    padding: 3px 7px;
 }
 
 QLineEdit#searchInput {
