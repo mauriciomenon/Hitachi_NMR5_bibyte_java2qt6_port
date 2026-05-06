@@ -1,0 +1,25 @@
+style.qss
+  6ffe40702933ad3a 28,44,47,54,57,62-66,68-69,74,79-84,87-94,118,121,126,134-137
+SCADA_NMR5_tool.py
+  6ffe40702933ad3a 4,7,75-82,95-97,99,106-107,109-133,142-146,148,158-159,171-182,285-286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "bec279255dc4a1aae87c35b4fa7610d3ff27979b",
+  "prompts": {
+    "6ffe40702933ad3a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex",
+      "messages": [],
+      "total_additions": 160,
+      "total_deletions": 239,
+      "accepted_lines": 621,
+      "overriden_lines": 0
+    }
+  }
+}
