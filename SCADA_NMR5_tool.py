@@ -26,14 +26,6 @@ from PyQt6.QtWidgets import (
 )
 
 
-def add_action_button(text, function, layout, compact=False):
-    button = QPushButton(text)
-    button.setObjectName("compactButton" if compact else "standardButton")
-    button.clicked.connect(function)
-    layout.addWidget(button)
-    return button
-
-
 class AnalogGraph(QWidget):
     def __init__(self):
         super().__init__()
@@ -48,8 +40,8 @@ class AnalogGraph(QWidget):
             60.0,
             False,
         )
-        self.setMinimumSize(160, 52)
-        self.setMaximumHeight(52)
+        self.setMinimumSize(190, 56)
+        self.setMaximumHeight(56)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     def set_result(self, result):
@@ -61,10 +53,10 @@ class AnalogGraph(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        available_width = self.width() - 24
-        bar_width = max(10, int(available_width * 0.25))
+        available_width = self.width() - 18
+        bar_width = max(18, int(available_width * 0.03))
         bar_left = (self.width() - bar_width) / 2
-        bar_rect = QRectF(bar_left, 24, bar_width, 12)
+        bar_rect = QRectF(bar_left, 26, bar_width, 12)
         if bar_rect.width() <= 0 or bar_rect.height() <= 0:
             return
 
@@ -99,15 +91,13 @@ class AnalogGraph(QWidget):
         painter.drawEllipse(int(marker_x) - 3, int(bar_rect.center().y()) - 3, 6, 6)
 
         legend_font = painter.font()
-        legend_font.setPointSize(4)
+        legend_font.setPointSize(6)
         painter.setFont(legend_font)
-        legend_text = f"B:{self._result.bias:.3g} S:{self._result.scale:.3g}"
-        if bar_rect.width() < 10:
-            legend_text = "B"
-        elif painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 4:
-            legend_text = f"{self._result.bias:.2g}|{self._result.scale:.2g}"
+        legend_text = f"B:{self._result.bias:.4g} S:{self._result.scale:.4g}"
         if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 4:
-            legend_text = f"{self._result.bias:.2g}"
+            legend_text = f"B:{self._result.bias:.3g} S:{self._result.scale:.3g}"
+        if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 4:
+            legend_text = f"B:{self._result.bias:.2g}"
         legend_rect = QRectF(
             bar_rect.left() + 2,
             bar_rect.top() + 1,
@@ -177,11 +167,8 @@ class AnalogPanel(QGroupBox):
         self.preset_0_20.setObjectName("analogPresetButton")
         self.preset_0_20.clicked.connect(self.apply_0_20_preset)
 
-        preset_label = QLabel("Padrao automacao")
-        preset_label.setObjectName("analogPresetLabel")
         preset_layout = QHBoxLayout()
-        preset_layout.setSpacing(3)
-        preset_layout.addWidget(preset_label)
+        preset_layout.setSpacing(4)
         preset_layout.addWidget(self.preset_4_20)
         preset_layout.addWidget(self.preset_0_20)
         preset_layout.addStretch(1)
@@ -236,21 +223,6 @@ class AnalogPanel(QGroupBox):
         except ValueError as exc:
             if show_warning:
                 QMessageBox.warning(self, "Erro", str(exc))
-            else:
-                self.analog_measured_result.setText("--")
-                self.analog_current.setText("--")
-                self.analog_bias.setText("--")
-                self.analog_scale.setText("--")
-                self.analog_raw_int.setText("--")
-                self.analog_raw_hex.setText("--")
-                self.analog_primary_hex.setText("--")
-                self.analog_primary_int.setText("--")
-                self.analog_status.setObjectName("analogStatusWarning")
-                self.analog_status.setText(str(exc))
-                status_style = self.analog_status.style()
-                if status_style is not None:
-                    status_style.unpolish(self.analog_status)
-                    status_style.polish(self.analog_status)
             return
 
         self.analog_measured_result.setText(f"{result.measured_value:.6g}")
@@ -311,21 +283,17 @@ class SostatPanel(QGroupBox):
         super().__init__("SOSTAT")
         bitbyte_layout = QVBoxLayout(self)
         bitbyte_layout.setContentsMargins(8, 8, 8, 8)
-        bitbyte_layout.setSpacing(6)
+        bitbyte_layout.setSpacing(4)
 
         bitbyte_layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
 
         self.entry_input = QLineEdit()
-        self.entry_input.setPlaceholderText("Digite PTNO ou BitByte")
         self.entry_input.setObjectName("ptnoInput")
         entry_row = QHBoxLayout()
-        entry_row.setContentsMargins(2, 2, 2, 2)
-        entry_row.setSpacing(4)
+        entry_row.setContentsMargins(0, 0, 0, 0)
+        entry_row.setSpacing(6)
         entry_row.addWidget(self.entry_input)
-        clear_button = add_action_button(
-            "x", self.limpar_valores, entry_row, compact=True
-        )
-        clear_button.setFixedWidth(16)
+        self.createButton("x", self.limpar_valores, entry_row, compact=True)
         bitbyte_layout.addLayout(entry_row)
 
         self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
@@ -335,17 +303,17 @@ class SostatPanel(QGroupBox):
         bitbyte_layout.addWidget(self.entry_ptno_bitbyte_resultbox)
 
         buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(10)
-        buttons_layout.setContentsMargins(2, 2, 2, 2)
-        ptno_button = add_action_button(
-            "PTNO", self.calcula_2, buttons_layout, compact=True
-        )
-        bitbyte_button = add_action_button(
-            "BitByte", self.calcula_1, buttons_layout, compact=True
-        )
-        ptno_button.setFixedWidth(70)
-        bitbyte_button.setFixedWidth(70)
+        buttons_layout.setSpacing(8)
+        self.createButton("PTNO", self.calcula_2, buttons_layout, compact=True)
+        self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
         bitbyte_layout.addLayout(buttons_layout)
+
+    def createButton(self, text, function, layout, compact=False):
+        button = QPushButton(text)
+        button.setObjectName("compactButton" if compact else "standardButton")
+        button.clicked.connect(function)
+        layout.addWidget(button)
+        return button
 
     def limpar_valores(self):
         self.entry_input.clear()
@@ -353,13 +321,18 @@ class SostatPanel(QGroupBox):
         self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def calcula_1(self):
-        self._run_sostat_conversion(bitbyte_from_ptno_result)
+        result, message, title = bitbyte_from_ptno_result(self.entry_input.text())
+        if result < 0:
+            QMessageBox.warning(self, title, message)
+            self.entry_ptno_bitbyte_resultbox.setText("Resultado")
+            return
+
+        if message:
+            QMessageBox.information(self, title, message)
+        self.entry_ptno_bitbyte_resultbox.setText(str(result))
 
     def calcula_2(self):
-        self._run_sostat_conversion(ptno_from_bitbyte_result)
-
-    def _run_sostat_conversion(self, converter):
-        result, message, title = converter(self.entry_input.text())
+        result, message, title = ptno_from_bitbyte_result(self.entry_input.text())
         if result < 0:
             QMessageBox.warning(self, title, message)
             self.entry_ptno_bitbyte_resultbox.setText("Resultado")
@@ -385,11 +358,11 @@ class App(QMainWindow):
         layout.setSpacing(8)
 
         controls_panel = QWidget()
-        controls_panel.setMinimumWidth(360)
-        controls_panel.setMaximumWidth(390)
+        controls_panel.setMinimumWidth(390)
+        controls_panel.setMaximumWidth(410)
         controls_layout = QVBoxLayout(controls_panel)
         controls_layout.setContentsMargins(0, 0, 0, 0)
-        controls_layout.setSpacing(8)
+        controls_layout.setSpacing(5)
         self.setupInitialComponents(controls_layout)
         layout.addWidget(controls_panel, 0)
 
@@ -404,7 +377,7 @@ class App(QMainWindow):
         search_layout = QHBoxLayout()
         search_layout.setSpacing(3)
         search_layout.addWidget(self.search_input)
-        add_action_button("Ir", self.procurar_geral, search_layout, compact=True)
+        self.createButton("Ir", self.procurar_geral, search_layout, compact=True)
         tables_layout.addLayout(search_layout)
 
         tables_body_layout = QHBoxLayout()
@@ -432,9 +405,7 @@ class App(QMainWindow):
         panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         panel_layout = QVBoxLayout(panel)
         panel_layout.setContentsMargins(0, 0, 0, 0)
-        add_action_button(
-            "Localizacao das UTRs", self.focus_main_table, panel_layout
-        )
+        self.createButton("Localizacao das UTRs", self.focus_main_table, panel_layout)
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
@@ -458,20 +429,20 @@ class App(QMainWindow):
             header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
             self.table.setColumnWidth(0, 70)
-            self.table.setColumnWidth(1, 46)
-            self.table.setColumnWidth(2, 34)
+            self.table.setColumnWidth(1, 58)
+            self.table.setColumnWidth(2, 40)
             self.table.setColumnWidth(3, 30)
-            self.table.setColumnWidth(4, 82)
-            self.table.setColumnWidth(5, 44)
-            self.table.setColumnWidth(6, 54)
-            self.table.setColumnWidth(7, 36)
+            self.table.setColumnWidth(4, 94)
+            self.table.setColumnWidth(5, 50)
+            self.table.setColumnWidth(6, 58)
+            self.table.setColumnWidth(7, 40)
         layout.addWidget(panel, 2)
 
     def setupSecondTable(self, layout):
         panel = QWidget()
         panel_layout = QVBoxLayout(panel)
         panel_layout.setContentsMargins(0, 0, 0, 0)
-        add_action_button(
+        self.createButton(
             "Codigo e Cores dos Cabos de UTRs", self.focus_second_table, panel_layout
         )
         self.second_table = QTableWidget()
@@ -494,13 +465,20 @@ class App(QMainWindow):
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
-            self.second_table.setColumnWidth(0, 40)
-            self.second_table.setColumnWidth(1, 46)
-            self.second_table.setColumnWidth(2, 22)
-            self.second_table.setColumnWidth(3, 28)
+            self.second_table.setColumnWidth(0, 56)
+            self.second_table.setColumnWidth(1, 54)
+            self.second_table.setColumnWidth(2, 28)
+            self.second_table.setColumnWidth(3, 38)
             self.second_table.setColumnWidth(4, 16)
             self.second_table.setColumnWidth(5, 116)
         layout.addWidget(panel, 1)
+
+    def createButton(self, text, function, layout, compact=False):
+        button = QPushButton(text)
+        button.setObjectName("compactButton" if compact else "standardButton")
+        button.clicked.connect(function)
+        layout.addWidget(button)
+        return button
 
     def configure_table(self, table):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
