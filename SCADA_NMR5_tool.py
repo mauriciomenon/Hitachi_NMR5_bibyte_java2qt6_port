@@ -40,7 +40,7 @@ class AnalogGraph(QWidget):
             60.0,
             False,
         )
-        self.setMinimumSize(260, 48)
+        self.setMinimumSize(190, 56)
         self.setMaximumHeight(56)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
@@ -53,7 +53,10 @@ class AnalogGraph(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        bar_rect = QRectF(14, 18, self.width() - 28, 14)
+        available_width = self.width() - 18
+        bar_width = max(18, int(available_width * 0.03))
+        bar_left = (self.width() - bar_width) / 2
+        bar_rect = QRectF(bar_left, 26, bar_width, 12)
         if bar_rect.width() <= 0 or bar_rect.height() <= 0:
             return
 
@@ -81,11 +84,33 @@ class AnalogGraph(QWidget):
         painter.setPen(QPen(QColor("#f1f3f5"), 2))
         painter.drawLine(
             int(marker_x),
-            int(bar_rect.top()) - 6,
+            int(bar_rect.top()),
             int(marker_x),
-            int(bar_rect.bottom()) + 6,
+            int(bar_rect.bottom()),
         )
         painter.drawEllipse(int(marker_x) - 3, int(bar_rect.center().y()) - 3, 6, 6)
+
+        legend_font = painter.font()
+        legend_font.setPointSize(6)
+        painter.setFont(legend_font)
+        legend_text = f"B:{self._result.bias:.4g} S:{self._result.scale:.4g}"
+        if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 4:
+            legend_text = f"B:{self._result.bias:.3g} S:{self._result.scale:.3g}"
+        if painter.fontMetrics().horizontalAdvance(legend_text) > bar_rect.width() - 4:
+            legend_text = f"B:{self._result.bias:.2g}"
+        legend_rect = QRectF(
+            bar_rect.left() + 2,
+            bar_rect.top() + 1,
+            bar_rect.width() - 4,
+            bar_rect.height() - 2,
+        )
+        painter.fillRect(legend_rect, QColor(22, 24, 26, 180))
+        painter.setPen(QPen(QColor("#d8dde3"), 1))
+        painter.drawText(
+            legend_rect,
+            Qt.AlignmentFlag.AlignCenter,
+            legend_text,
+        )
 
 
 class AnalogPanel(QGroupBox):
@@ -94,10 +119,10 @@ class AnalogPanel(QGroupBox):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         analog_layout = QVBoxLayout(self)
-        analog_layout.setSpacing(3)
+        analog_layout.setSpacing(2)
         analog_form_layout = QGridLayout()
         analog_form_layout.setHorizontalSpacing(3)
-        analog_form_layout.setVerticalSpacing(3)
+        analog_form_layout.setVerticalSpacing(2)
         analog_form_layout.setContentsMargins(0, 0, 0, 0)
         analog_layout.addLayout(analog_form_layout)
 
@@ -134,6 +159,21 @@ class AnalogPanel(QGroupBox):
         self.analog_status.setObjectName("analogStatusOk")
         self.analog_graph = AnalogGraph()
 
+        self.preset_4_20 = QPushButton("4-20 mA")
+        self.preset_4_20.setObjectName("analogPresetButton")
+        self.preset_4_20.setToolTip("Automacao: 4-20mA com escala 0-10")
+        self.preset_4_20.clicked.connect(self.apply_4_20_preset)
+        self.preset_0_20 = QPushButton("0-20 mA")
+        self.preset_0_20.setObjectName("analogPresetButton")
+        self.preset_0_20.clicked.connect(self.apply_0_20_preset)
+
+        preset_layout = QHBoxLayout()
+        preset_layout.setSpacing(4)
+        preset_layout.addWidget(self.preset_4_20)
+        preset_layout.addWidget(self.preset_0_20)
+        preset_layout.addStretch(1)
+        analog_layout.addLayout(preset_layout)
+
         fields = [
             ("Lim inf mA", self.analog_lim_inf),
             ("Lim sup mA", self.analog_lim_sup),
@@ -147,7 +187,7 @@ class AnalogPanel(QGroupBox):
             analog_form_layout.addWidget(field, row, 1)
 
         result_labels = [
-            ("Medido", self.analog_measured_result),
+            ("Med", self.analog_measured_result),
             ("mA", self.analog_current),
             ("BIAS", self.analog_bias),
             ("SCALE", self.analog_scale),
@@ -165,6 +205,7 @@ class AnalogPanel(QGroupBox):
         analog_layout.addWidget(self.analog_status)
         analog_layout.addWidget(self.analog_graph)
         analog_button = QPushButton("Calcular analogico")
+        analog_button.setObjectName("compactButton")
         analog_button.clicked.connect(lambda: self.calculate_analog())
         analog_layout.addWidget(analog_button)
         self.calculate_analog(show_warning=False)
@@ -190,7 +231,7 @@ class AnalogPanel(QGroupBox):
         self.analog_scale.setText(f"{result.scale:.6g}")
         self.analog_raw_int.setText(str(result.raw_int16))
         self.analog_raw_hex.setText(result.raw_hex16)
-        self.analog_primary_hex.setText(f"0x{result.raw_hex16[2:].upper()}")
+        self.analog_primary_hex.setText(result.raw_hex16)
         self.analog_primary_int.setText(f"INT16 {result.raw_int16}")
         if result.out_of_scale:
             self.analog_status.setObjectName("analogStatusWarning")
@@ -202,6 +243,20 @@ class AnalogPanel(QGroupBox):
             status_style.unpolish(self.analog_status)
             status_style.polish(self.analog_status)
         self.analog_graph.set_result(result)
+
+    def apply_4_20_preset(self):
+        self.apply_preset("4", "20", "0", "10", "5")
+
+    def apply_0_20_preset(self):
+        self.apply_preset("0", "20", "0", "20", "10")
+
+    def apply_preset(self, lim_inf, lim_sup, range_inf, range_sup, measured):
+        self.analog_lim_inf.setText(lim_inf)
+        self.analog_lim_sup.setText(lim_sup)
+        self.analog_range_inf.setText(range_inf)
+        self.analog_range_sup.setText(range_sup)
+        self.analog_measured.setText(measured)
+        self.calculate_analog()
 
     def current_analog_input_mode(self):
         mode_map = {
@@ -223,6 +278,71 @@ class AnalogPanel(QGroupBox):
         return " | ".join(status_parts)
 
 
+class SostatPanel(QGroupBox):
+    def __init__(self):
+        super().__init__("SOSTAT")
+        bitbyte_layout = QVBoxLayout(self)
+        bitbyte_layout.setContentsMargins(8, 8, 8, 8)
+        bitbyte_layout.setSpacing(4)
+
+        bitbyte_layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
+
+        self.entry_input = QLineEdit()
+        self.entry_input.setObjectName("ptnoInput")
+        entry_row = QHBoxLayout()
+        entry_row.setContentsMargins(0, 0, 0, 0)
+        entry_row.setSpacing(6)
+        entry_row.addWidget(self.entry_input)
+        self.createButton("x", self.limpar_valores, entry_row, compact=True)
+        bitbyte_layout.addLayout(entry_row)
+
+        self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
+        self.entry_ptno_bitbyte_resultbox.setReadOnly(True)
+        self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.entry_ptno_bitbyte_resultbox.setObjectName("ptnoResult")
+        bitbyte_layout.addWidget(self.entry_ptno_bitbyte_resultbox)
+
+        buttons_layout = QHBoxLayout()
+        buttons_layout.setSpacing(8)
+        self.createButton("PTNO", self.calcula_2, buttons_layout, compact=True)
+        self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
+        bitbyte_layout.addLayout(buttons_layout)
+
+    def createButton(self, text, function, layout, compact=False):
+        button = QPushButton(text)
+        button.setObjectName("compactButton" if compact else "standardButton")
+        button.clicked.connect(function)
+        layout.addWidget(button)
+        return button
+
+    def limpar_valores(self):
+        self.entry_input.clear()
+        self.entry_ptno_bitbyte_resultbox.setText("Resultado")
+        self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    def calcula_1(self):
+        result, message, title = bitbyte_from_ptno_result(self.entry_input.text())
+        if result < 0:
+            QMessageBox.warning(self, title, message)
+            self.entry_ptno_bitbyte_resultbox.setText("Resultado")
+            return
+
+        if message:
+            QMessageBox.information(self, title, message)
+        self.entry_ptno_bitbyte_resultbox.setText(str(result))
+
+    def calcula_2(self):
+        result, message, title = ptno_from_bitbyte_result(self.entry_input.text())
+        if result < 0:
+            QMessageBox.warning(self, title, message)
+            self.entry_ptno_bitbyte_resultbox.setText("Resultado")
+            return
+
+        if message:
+            QMessageBox.information(self, title, message)
+        self.entry_ptno_bitbyte_resultbox.setText(str(result))
+
+
 class App(QMainWindow):
 
     def __init__(self):
@@ -239,10 +359,10 @@ class App(QMainWindow):
 
         controls_panel = QWidget()
         controls_panel.setMinimumWidth(390)
-        controls_panel.setMaximumWidth(440)
+        controls_panel.setMaximumWidth(410)
         controls_layout = QVBoxLayout(controls_panel)
         controls_layout.setContentsMargins(0, 0, 0, 0)
-        controls_layout.setSpacing(6)
+        controls_layout.setSpacing(5)
         self.setupInitialComponents(controls_layout)
         layout.addWidget(controls_panel, 0)
 
@@ -253,8 +373,12 @@ class App(QMainWindow):
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar nas tabelas")
-        tables_layout.addWidget(self.search_input)
-        self.createButton("Procurar Geral", self.procurar_geral, tables_layout)
+        self.search_input.setObjectName("searchInput")
+        search_layout = QHBoxLayout()
+        search_layout.setSpacing(3)
+        search_layout.addWidget(self.search_input)
+        self.createButton("Ir", self.procurar_geral, search_layout, compact=True)
+        tables_layout.addLayout(search_layout)
 
         tables_body_layout = QHBoxLayout()
         tables_body_layout.setSpacing(8)
@@ -263,33 +387,15 @@ class App(QMainWindow):
         tables_layout.addLayout(tables_body_layout)
         layout.addWidget(tables_panel, 1)
 
-        self.resize(1280, 720)
+        self.resize(1220, 680)
 
     def applyStyle(self):
         style_path = Path(__file__).with_name("style.qss")
         self.setStyleSheet(style_path.read_text(encoding="utf-8"))
 
     def setupInitialComponents(self, layout):
-        bitbyte_box = QGroupBox("SOSTAT")
-        bitbyte_layout = QVBoxLayout(bitbyte_box)
-        layout.addWidget(bitbyte_box)
-
-        bitbyte_layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
-
-        self.entry_input = QLineEdit()
-        bitbyte_layout.addWidget(self.entry_input)
-
-        buttons_layout = QHBoxLayout()
-        self.createButton("Calcular PTNO", self.calcula_2, buttons_layout)
-        self.createButton("Calcular BitByte", self.calcula_1, buttons_layout)
-        bitbyte_layout.addLayout(buttons_layout)
-
-        self.entry_ptno_bitbyte_resultbox = QLineEdit("Resultado")
-        self.entry_ptno_bitbyte_resultbox.setReadOnly(True)
-        self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        bitbyte_layout.addWidget(self.entry_ptno_bitbyte_resultbox)
-
-        self.createButton("Limpar valores", self.limpar_valores, bitbyte_layout)
+        self.sostat_panel = SostatPanel()
+        layout.addWidget(self.sostat_panel)
 
         self.analog_panel = AnalogPanel()
         layout.addWidget(self.analog_panel)
@@ -323,13 +429,13 @@ class App(QMainWindow):
             header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
             self.table.setColumnWidth(0, 70)
-            self.table.setColumnWidth(1, 68)
-            self.table.setColumnWidth(2, 44)
-            self.table.setColumnWidth(3, 38)
-            self.table.setColumnWidth(4, 168)
-            self.table.setColumnWidth(5, 56)
-            self.table.setColumnWidth(6, 62)
-            self.table.setColumnWidth(7, 42)
+            self.table.setColumnWidth(1, 58)
+            self.table.setColumnWidth(2, 40)
+            self.table.setColumnWidth(3, 30)
+            self.table.setColumnWidth(4, 94)
+            self.table.setColumnWidth(5, 50)
+            self.table.setColumnWidth(6, 58)
+            self.table.setColumnWidth(7, 40)
         layout.addWidget(panel, 2)
 
     def setupSecondTable(self, layout):
@@ -359,18 +465,20 @@ class App(QMainWindow):
         if header is not None:
             header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
             header.setStretchLastSection(False)
-            self.second_table.setColumnWidth(0, 96)
-            self.second_table.setColumnWidth(1, 62)
-            self.second_table.setColumnWidth(2, 38)
+            self.second_table.setColumnWidth(0, 56)
+            self.second_table.setColumnWidth(1, 54)
+            self.second_table.setColumnWidth(2, 28)
             self.second_table.setColumnWidth(3, 38)
-            self.second_table.setColumnWidth(4, 30)
-            self.second_table.setColumnWidth(5, 96)
+            self.second_table.setColumnWidth(4, 16)
+            self.second_table.setColumnWidth(5, 116)
         layout.addWidget(panel, 1)
 
-    def createButton(self, text, function, layout):
+    def createButton(self, text, function, layout, compact=False):
         button = QPushButton(text)
+        button.setObjectName("compactButton" if compact else "standardButton")
         button.clicked.connect(function)
         layout.addWidget(button)
+        return button
 
     def configure_table(self, table):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -379,12 +487,7 @@ class App(QMainWindow):
         table.setWordWrap(False)
         vertical_header = table.verticalHeader()
         if vertical_header is not None:
-            vertical_header.setDefaultSectionSize(28)
-
-    def limpar_valores(self):
-        self.entry_input.clear()
-        self.entry_ptno_bitbyte_resultbox.setText("Resultado")
-        self.entry_ptno_bitbyte_resultbox.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            vertical_header.setDefaultSectionSize(26)
 
     def focus_main_table(self):
         self.table.setFocus()
@@ -411,28 +514,6 @@ class App(QMainWindow):
                 item = table.item(row, col)
                 if item and search_text in item.text().strip().lower():
                     item.setSelected(True)
-
-    def calcula_1(self):
-        result, message, title = bitbyte_from_ptno_result(self.entry_input.text())
-        if result < 0:
-            QMessageBox.warning(self, title, message)
-            self.entry_ptno_bitbyte_resultbox.setText("Resultado")
-            return
-
-        if message:
-            QMessageBox.information(self, title, message)
-        self.entry_ptno_bitbyte_resultbox.setText(str(result))
-
-    def calcula_2(self):
-        result, message, title = ptno_from_bitbyte_result(self.entry_input.text())
-        if result < 0:
-            QMessageBox.warning(self, title, message)
-            self.entry_ptno_bitbyte_resultbox.setText("Resultado")
-            return
-
-        if message:
-            QMessageBox.information(self, title, message)
-        self.entry_ptno_bitbyte_resultbox.setText(str(result))
 
     def add_table_data(self):
         self.populate_table(self.table, RTU_DATA)

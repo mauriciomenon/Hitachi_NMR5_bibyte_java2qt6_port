@@ -28,8 +28,8 @@ QLabel#analogPrimaryValue {
     border: 1px solid #2da9e9;
     border-radius: 4px;
     color: #ffffff;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 9px;
+    font-weight: normal;
     padding: 3px 5px;
 }
 
@@ -38,13 +38,12 @@ QLabel#analogPrimaryIntValue {
     border: 1px solid #3b3f43;
     border-radius: 4px;
     color: #dbe3ea;
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 9px;
     padding: 3px 5px;
 }
 
 QLabel#analogOutputValue {
-    font-size: 10px;
+    font-size: 8px;
 }
 
 QLabel#analogStatusOk {
@@ -67,20 +66,21 @@ QLineEdit {
 }
 
 QLineEdit#analogInputNarrow {
-    max-width: 50px;
-    min-width: 40px;
+    max-width: 42px;
+    min-width: 34px;
     padding: 3px 5px;
 }
 
 QLineEdit#analogInputWide {
-    max-width: 78px;
-    min-width: 66px;
+    max-width: 70px;
+    min-width: 60px;
+    font-size: 10px;
     padding: 3px 5px;
 }
 
 QComboBox#analogInputMode {
-    max-width: 78px;
-    min-width: 66px;
+    max-width: 70px;
+    min-width: 60px;
     padding: 3px 5px;
 }
 
@@ -92,8 +92,23 @@ QPushButton {
     background: #4d5358;
     border: 1px solid #626970;
     border-radius: 4px;
-    padding: 6px 10px;
+    padding: 5px 10px;
     font-weight: 600;
+}
+
+QPushButton#compactButton {
+    padding: 2px 6px;
+    min-height: 20px;
+    max-height: 20px;
+    font-size: 9px;
+    font-weight: 500;
+}
+
+QPushButton#analogPresetButton {
+    padding: 2px 6px;
+    min-height: 17px;
+    max-height: 17px;
+    font-size: 8px;
 }
 
 QPushButton:hover {
@@ -119,8 +134,33 @@ QHeaderView::section {
     border: 0;
     border-right: 1px solid #4c535a;
     border-bottom: 1px solid #4c535a;
-    padding: 6px 8px;
+    padding: 3px 4px;
+    font-size: 9px;
     font-weight: 600;
+}
+
+QLineEdit#ptnoInput {
+    min-height: 21px;
+    max-width: 158px;
+    min-width: 140px;
+    font-size: 11px;
+    padding: 3px 5px;
+}
+
+QLineEdit#ptnoResult {
+    min-height: 20px;
+    max-width: 158px;
+    min-width: 140px;
+    font-size: 11px;
+    padding: 3px 5px;
+}
+
+QLineEdit#searchInput {
+    min-height: 22px;
+    max-width: 160px;
+    min-width: 130px;
+    font-size: 10px;
+    padding: 3px 5px;
 }
 
 QScrollBar:vertical, QScrollBar:horizontal {
