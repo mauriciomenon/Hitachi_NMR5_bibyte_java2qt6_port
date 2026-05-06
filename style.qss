@@ -19,6 +19,21 @@ QGroupBox::title {
     padding: 0 4px;
 }
 
+QGroupBox#calcSection {
+    border: 1px solid #d5d8db;
+    border-radius: 2px;
+    margin-top: 10px;
+    padding: 8px;
+    background: #2b2e31;
+    font-weight: 600;
+}
+
+QGroupBox#calcSection::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 4px;
+}
+
 QLabel {
     color: #f1f3f5;
 }
@@ -53,11 +68,13 @@ QLabel#analogOutputValue {
 QLabel#analogFieldLabel {
     color: #e1e5e9;
     font-weight: 500;
+    min-width: 98px;
 }
 
 QLabel#analogResultLabel {
     color: #c1c8ce;
     font-weight: 500;
+    min-width: 48px;
 }
 
 QLabel#analogStatusOk {
@@ -80,14 +97,14 @@ QLineEdit {
 }
 
 QLineEdit#analogInputNarrow {
-    max-width: 42px;
-    min-width: 34px;
+    max-width: 58px;
+    min-width: 50px;
     padding: 3px 7px;
 }
 
 QLineEdit#analogInputWide {
-    max-width: 84px;
-    min-width: 70px;
+    max-width: 92px;
+    min-width: 82px;
     font-size: 10px;
     padding: 3px 7px;
 }

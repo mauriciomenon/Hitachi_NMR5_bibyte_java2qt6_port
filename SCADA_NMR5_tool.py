@@ -113,16 +113,11 @@ class AnalogGraph(QWidget):
 
 class AnalogPanel(QGroupBox):
     def __init__(self):
-        super().__init__("Analogico Raw Counts BIAS/SCALE v1.12")
+        super().__init__("Conversão Raw Counts - Bias/Scale")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         analog_layout = QVBoxLayout(self)
-        analog_layout.setSpacing(7)
-        analog_form_layout = QGridLayout()
-        analog_form_layout.setHorizontalSpacing(8)
-        analog_form_layout.setVerticalSpacing(5)
-        analog_form_layout.setContentsMargins(0, 4, 0, 0)
-        analog_layout.addLayout(analog_form_layout)
+        analog_layout.setSpacing(8)
 
         self.analog_lim_inf = QLineEdit("4")
         self.analog_lim_inf.setObjectName("analogInputNarrow")
@@ -165,27 +160,41 @@ class AnalogPanel(QGroupBox):
         self.preset_0_20.setObjectName("analogPresetButton")
         self.preset_0_20.clicked.connect(self.apply_0_20_preset)
 
-        fields = [
-            ("Lim inf mA", self.analog_lim_inf),
-            ("Lim sup mA", self.analog_lim_sup),
-            ("Range inf", self.analog_range_inf),
-            ("Range sup", self.analog_range_sup),
-            ("Entrada", self.analog_input_mode),
-            ("Valor", self.analog_measured),
-        ]
-        for row, (label, field) in enumerate(fields):
-            field_label = QLabel(label)
-            field_label.setObjectName("analogFieldLabel")
-            analog_form_layout.addWidget(field_label, row, 0)
-            analog_form_layout.addWidget(field, row, 1)
+        current_box = QGroupBox("Valores de corrente do transdutor (mA)")
+        current_box.setObjectName("calcSection")
+        current_layout = QGridLayout(current_box)
+        current_layout.setHorizontalSpacing(8)
+        current_layout.setVerticalSpacing(6)
+        current_layout.setContentsMargins(10, 10, 10, 10)
+        self.add_analog_field(current_layout, 0, 0, "Limite inferior", self.analog_lim_inf)
+        self.add_analog_field(current_layout, 0, 2, "Limite superior", self.analog_lim_sup)
 
         preset_layout = QHBoxLayout()
-        preset_layout.setSpacing(5)
+        preset_layout.setSpacing(8)
         preset_layout.addWidget(self.preset_4_20)
         preset_layout.addWidget(self.preset_0_20)
         preset_layout.addStretch(1)
-        analog_form_layout.addLayout(preset_layout, 0, 2, 1, 2)
+        current_layout.addLayout(preset_layout, 1, 0, 1, 4)
+        analog_layout.addWidget(current_box)
 
+        scale_box = QGroupBox("Escala do equipamento")
+        scale_box.setObjectName("calcSection")
+        scale_layout = QGridLayout(scale_box)
+        scale_layout.setHorizontalSpacing(8)
+        scale_layout.setVerticalSpacing(6)
+        scale_layout.setContentsMargins(10, 10, 10, 10)
+        self.add_analog_field(scale_layout, 0, 0, "Range inf", self.analog_range_inf)
+        self.add_analog_field(scale_layout, 0, 2, "Range sup", self.analog_range_sup)
+        self.add_analog_field(scale_layout, 1, 0, "Entrada", self.analog_input_mode)
+        self.add_analog_field(scale_layout, 1, 2, "Valor", self.analog_measured)
+        analog_layout.addWidget(scale_box)
+
+        result_box = QGroupBox("Resultado")
+        result_box.setObjectName("calcSection")
+        result_layout = QGridLayout(result_box)
+        result_layout.setHorizontalSpacing(8)
+        result_layout.setVerticalSpacing(4)
+        result_layout.setContentsMargins(10, 10, 10, 10)
         result_labels = [
             ("Med", self.analog_measured_result),
             ("mA", self.analog_current),
@@ -194,11 +203,12 @@ class AnalogPanel(QGroupBox):
             ("INT16", self.analog_raw_int),
             ("HEX16", self.analog_raw_hex),
         ]
-        for row, (label, value_label) in enumerate(result_labels, start=1):
+        for row, (label, value_label) in enumerate(result_labels):
             result_label = QLabel(label)
             result_label.setObjectName("analogResultLabel")
-            analog_form_layout.addWidget(result_label, row, 2)
-            analog_form_layout.addWidget(value_label, row, 3)
+            result_layout.addWidget(result_label, row, 0)
+            result_layout.addWidget(value_label, row, 1)
+        analog_layout.addWidget(result_box)
 
         primary_layout = QHBoxLayout()
         primary_layout.setSpacing(6)
@@ -213,6 +223,12 @@ class AnalogPanel(QGroupBox):
         analog_button.clicked.connect(lambda: self.calculate_analog())
         analog_layout.addWidget(analog_button)
         self.calculate_analog(show_warning=False)
+
+    def add_analog_field(self, layout, row, column, text, field):
+        label = QLabel(text)
+        label.setObjectName("analogFieldLabel")
+        layout.addWidget(label, row, column)
+        layout.addWidget(field, row, column + 1)
 
     def calculate_analog(self, show_warning=True):
         try:
@@ -284,14 +300,12 @@ class AnalogPanel(QGroupBox):
 
 class SostatPanel(QGroupBox):
     def __init__(self):
-        super().__init__("SOSTAT")
+        super().__init__("Conversão de Pontos SCADA")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setMaximumHeight(174)
         bitbyte_layout = QVBoxLayout(self)
         bitbyte_layout.setContentsMargins(16, 14, 16, 14)
         bitbyte_layout.setSpacing(10)
-
-        bitbyte_layout.addWidget(QLabel("Conversor BitByte <-> PTNO"))
 
         self.entry_input = QLineEdit()
         self.entry_input.setPlaceholderText("Digite PTNO ou BitByte")
@@ -303,7 +317,7 @@ class SostatPanel(QGroupBox):
         clear_button = self.createButton("x", self.limpar_valores, entry_row, compact=True)
         clear_button.setFixedWidth(28)
         bitbyte_layout.addLayout(entry_row)
-        bitbyte_layout.addSpacing(3)
+        bitbyte_layout.addSpacing(8)
 
         self.entry_ptno_bitbyte_resultbox = QLabel("Resultado")
         self.entry_ptno_bitbyte_resultbox.setAlignment(
@@ -453,10 +467,10 @@ class App(QMainWindow):
             self.table.setColumnWidth(1, 62)
             self.table.setColumnWidth(2, 34)
             self.table.setColumnWidth(3, 28)
-            self.table.setColumnWidth(4, 122)
+            self.table.setColumnWidth(4, 114)
             self.table.setColumnWidth(5, 46)
             self.table.setColumnWidth(6, 52)
-            self.table.setColumnWidth(7, 36)
+            self.table.setColumnWidth(7, 44)
         layout.addWidget(panel, 3)
 
     def setupSecondTable(self, layout):
