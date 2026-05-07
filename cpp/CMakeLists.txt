@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 
 if(Qt6_VERSION VERSION_GREATER_EQUAL "6.8.0")
     qt_policy(SET QTP0001 NEW)
@@ -15,14 +15,27 @@ endif()
 
 qt_standard_project_setup()
 
-qt_add_executable(nmr5_qml
+add_library(nmr5_calculators STATIC
     src/AnalogCalculator.cpp
     src/AnalogCalculator.h
+    src/PointCalculator.cpp
+    src/PointCalculator.h
+)
+
+target_include_directories(nmr5_calculators
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(nmr5_calculators
+    PUBLIC
+        Qt6::Core
+)
+
+qt_add_executable(nmr5_qml
     src/AppBackend.cpp
     src/AppBackend.h
     src/main.cpp
-    src/PointCalculator.cpp
-    src/PointCalculator.h
     src/TableData.cpp
     src/TableData.h
     src/TableProvider.cpp
@@ -44,9 +57,24 @@ qt_add_qml_module(nmr5_qml
 
 target_link_libraries(nmr5_qml
     PRIVATE
+        nmr5_calculators
         Qt6::Core
         Qt6::Gui
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
 )
+
+enable_testing()
+
+add_executable(nmr5_calculator_tests
+    tests/calculator_tests.cpp
+)
+
+target_link_libraries(nmr5_calculator_tests
+    PRIVATE
+        nmr5_calculators
+        Qt6::Test
+)
+
+add_test(NAME nmr5_calculator_tests COMMAND nmr5_calculator_tests)
