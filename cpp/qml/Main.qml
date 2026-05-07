@@ -277,7 +277,7 @@ ApplicationWindow {
                     title: "Codigo e Cores dos Cabos de UTRs"
                     headers: ["Cor", "P&B", "Par", "Fio", "Anilha", "Cor an."]
                     keys: ["cor", "pb", "par", "fio", "anilha", "corAnilha"]
-                    widths: [86, 74, 44, 50, 64, 70]
+                    widths: [86, 68, 44, 44, 76, 70]
                     rows: tables.filteredCableRows
                 }
             }
