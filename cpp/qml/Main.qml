@@ -49,26 +49,32 @@ ApplicationWindow {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 8
-        spacing: 8
+        anchors.leftMargin: 8
+        anchors.topMargin: 8
+        anchors.rightMargin: 12
+        anchors.bottomMargin: 8
+        spacing: 12
 
         ColumnLayout {
-            Layout.preferredWidth: 410
-            Layout.maximumWidth: 410
+            Layout.preferredWidth: 390
+            Layout.maximumWidth: 390
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
             spacing: 8
 
             Text {
+                Layout.preferredWidth: 340
+                Layout.alignment: Qt.AlignHCenter
                 text: "Conversao de Pontos SCADA"
                 color: "#f1f3f5"
                 font.pixelSize: 16
                 font.bold: true
+                horizontalAlignment: Text.AlignHCenter
             }
 
             ColumnLayout {
-                Layout.preferredWidth: 360
-                Layout.maximumWidth: 360
+                Layout.preferredWidth: 340
+                Layout.maximumWidth: 340
                 spacing: 8
 
                 RowLayout {
@@ -129,16 +135,19 @@ ApplicationWindow {
             }
 
             Text {
+                Layout.preferredWidth: 340
+                Layout.alignment: Qt.AlignHCenter
                 text: "Conversao Raw Counts - Bias/Scale"
                 color: "#f1f3f5"
                 font.pixelSize: 16
                 font.bold: true
+                horizontalAlignment: Text.AlignHCenter
                 Layout.topMargin: 12
             }
 
             ColumnLayout {
-                Layout.preferredWidth: 360
-                Layout.maximumWidth: 360
+                Layout.preferredWidth: 340
+                Layout.maximumWidth: 340
                 spacing: 8
 
                 SectionBox {
@@ -166,9 +175,9 @@ ApplicationWindow {
                             spacing: 10
                             FieldLabel { text: "Faixas:" }
                             RowLayout {
-                                spacing: 8
-                                Button { text: "0-20 mA"; Layout.preferredWidth: 84; onClicked: applyPreset("0", "20", "0", "20", "10") }
-                                Button { text: "4-20 mA"; Layout.preferredWidth: 84; onClicked: applyPreset("4", "20", "0", "10", "5") }
+                                spacing: 4
+                                Button { text: "0-20 mA"; Layout.preferredWidth: 68; font.pixelSize: 10; onClicked: applyPreset("0", "20", "0", "20", "10") }
+                                Button { text: "4-20 mA"; Layout.preferredWidth: 68; font.pixelSize: 10; onClicked: applyPreset("4", "20", "0", "10", "5") }
                             }
                         }
                     }
@@ -209,7 +218,11 @@ ApplicationWindow {
                         RowLayout {
                             spacing: 10
                             FieldLabel { text: "Valor" }
-                            CalcField { text: analogValue; onTextEdited: analogValue = text }
+                            CalcField {
+                                text: analogValue
+                                onTextEdited: analogValue = text
+                                onAccepted: calculateAnalog()
+                            }
                         }
                         Button {
                             text: "Calcular"
@@ -238,8 +251,10 @@ ApplicationWindow {
                         ResultRow { label: "BIAS"; value: analogResult.ok ? analogResult.bias : "--" }
                         ResultRow { label: "SCALE"; value: analogResult.ok ? analogResult.scale : "--" }
                         TextField {
-                            Layout.fillWidth: true
+                            Layout.fillWidth: false
+                            Layout.preferredWidth: 226
                             Layout.preferredHeight: 30
+                            Layout.topMargin: 5
                             readOnly: true
                             selectByMouse: true
                             horizontalAlignment: Text.AlignRight
@@ -297,7 +312,7 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 8
+                spacing: 10
                 DataPanel {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -305,7 +320,7 @@ ApplicationWindow {
                     title: "Localizacao das UTRs"
                     headers: ["UTR", "SOM", "Logic", "Link", "Localizacao", "Unidade", "Cota [m]", "Eixo"]
                     keys: ["utr", "som", "logic", "link", "localizacao", "unidade", "cota", "eixo"]
-                    widths: [68, 74, 40, 38, 126, 58, 54, 42]
+                    widths: [84, 74, 40, 38, 126, 58, 54, 42]
                     rows: tables.filteredRtuRows
                 }
                 DataPanel {
