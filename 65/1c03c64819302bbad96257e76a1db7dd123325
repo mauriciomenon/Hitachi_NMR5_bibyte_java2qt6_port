@@ -1,0 +1,19 @@
+cpp/qml/Main.qml
+  s_6ffe40702933ad::t_8185869aaf78eb 280
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "651c03c64819302bbad96257e76a1db7dd123325",
+  "prompts": {},
+  "sessions": {
+    "s_6ffe40702933ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex <codex@example.com>"
+    }
+  }
+}
