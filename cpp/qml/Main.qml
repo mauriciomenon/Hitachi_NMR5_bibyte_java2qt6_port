@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     id: root
-    width: 1200
+    width: 1170
     height: 900
     minimumWidth: 980
     minimumHeight: 820
@@ -56,8 +56,8 @@ ApplicationWindow {
         spacing: 8
 
         ColumnLayout {
-            Layout.preferredWidth: 340
-            Layout.maximumWidth: 340
+            Layout.preferredWidth: 312
+            Layout.maximumWidth: 312
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
             spacing: 8
