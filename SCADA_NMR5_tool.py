@@ -25,6 +25,13 @@ from PyQt6.QtWidgets import (
 )
 
 
+ANALOG_LABEL_WIDTH = 86
+ANALOG_CONTROL_WIDTH = 84
+ANALOG_ROW_HEIGHT = 30
+SEARCH_ROW_HEIGHT = 34
+SUBTITLE_ROW_HEIGHT = 28
+
+
 class AnalogPanel(QGroupBox):
     def __init__(self):
         super().__init__("Conversão Raw Counts - Bias/Scale")
@@ -72,71 +79,70 @@ class AnalogPanel(QGroupBox):
         self.preset_0_20 = QPushButton("0-20 mA")
         self.preset_0_20.setObjectName("analogPresetButton")
         self.preset_0_20.clicked.connect(self.apply_0_20_preset)
-        self.analog_button = self.create_compact_button("Calcular", 84)
+        self.preset_0_20.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        self.preset_4_20.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        self.preset_0_20.setFixedHeight(ANALOG_ROW_HEIGHT)
+        self.preset_4_20.setFixedHeight(ANALOG_ROW_HEIGHT)
+        self.analog_button = self.create_compact_button(
+            "Calcular", ANALOG_CONTROL_WIDTH
+        )
         self.analog_button.clicked.connect(lambda: self.calculate_analog())
-        self.analog_lim_inf.setFixedWidth(58)
-        self.analog_lim_sup.setFixedWidth(58)
-        self.analog_range_inf.setFixedWidth(58)
-        self.analog_range_sup.setFixedWidth(58)
-        self.analog_input_mode.setFixedWidth(88)
-        self.analog_measured.setFixedWidth(58)
+        self.analog_lim_inf.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        self.analog_lim_sup.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        self.analog_range_inf.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        self.analog_range_sup.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        self.analog_input_mode.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        self.analog_measured.setFixedWidth(ANALOG_CONTROL_WIDTH)
+        for field in (
+            self.analog_lim_inf,
+            self.analog_lim_sup,
+            self.analog_range_inf,
+            self.analog_range_sup,
+            self.analog_input_mode,
+            self.analog_measured,
+        ):
+            field.setFixedHeight(ANALOG_ROW_HEIGHT)
 
         current_box = QGroupBox("Valores de corrente do transdutor (mA)")
         current_box.setObjectName("calcSection")
-        current_layout = QVBoxLayout(current_box)
-        current_layout.setSpacing(7)
-        current_layout.setContentsMargins(10, 10, 10, 10)
-
-        limit_row = QHBoxLayout()
-        limit_row.setSpacing(8)
-        limit_row.addWidget(self.create_inline_label("Limite inferior", 92))
-        limit_row.addWidget(self.analog_lim_inf)
-        limit_row.addSpacing(8)
-        limit_row.addWidget(self.create_inline_label("Limite superior", 92))
-        limit_row.addWidget(self.analog_lim_sup)
-        limit_row.addStretch(1)
-        current_layout.addLayout(limit_row)
-
-        preset_layout = QHBoxLayout()
-        preset_layout.setSpacing(8)
-        preset_layout.addWidget(self.create_inline_label("Valores tipicos:", 92))
-        preset_layout.addWidget(self.preset_0_20)
-        preset_layout.addWidget(self.preset_4_20)
-        preset_layout.addStretch(1)
-        current_layout.addLayout(preset_layout)
+        current_layout = self.create_analog_grid(current_box)
+        current_layout.addWidget(
+            self.create_inline_label("Limite inferior", ANALOG_LABEL_WIDTH), 0, 0
+        )
+        current_layout.addWidget(self.analog_lim_inf, 0, 1)
+        current_layout.addWidget(
+            self.create_inline_label("Limite superior", ANALOG_LABEL_WIDTH), 0, 2
+        )
+        current_layout.addWidget(self.analog_lim_sup, 0, 3)
+        current_layout.addWidget(
+            self.create_inline_label("Valores tipicos:", ANALOG_LABEL_WIDTH), 1, 0
+        )
+        current_layout.addWidget(self.preset_0_20, 1, 1)
+        current_layout.addWidget(self.preset_4_20, 1, 3)
         analog_layout.addWidget(current_box)
 
         scale_box = QGroupBox("Escala do equipamento")
         scale_box.setObjectName("calcSection")
-        scale_layout = QVBoxLayout(scale_box)
-        scale_layout.setSpacing(7)
-        scale_layout.setContentsMargins(10, 10, 10, 10)
-
-        range_row = QHBoxLayout()
-        range_row.setSpacing(8)
-        range_row.addWidget(self.create_inline_label("Range inf", 92))
-        range_row.addWidget(self.analog_range_inf)
-        range_row.addSpacing(10)
-        range_row.addWidget(self.create_inline_label("Range sup", 92))
-        range_row.addWidget(self.analog_range_sup)
-        range_row.addStretch(1)
-        scale_layout.addLayout(range_row)
-
-        input_row = QHBoxLayout()
-        input_row.setSpacing(8)
-        input_row.addWidget(self.create_inline_label("Entrada", 92))
-        input_row.addWidget(self.analog_input_mode)
-        input_row.addSpacing(10)
-        input_row.addWidget(self.create_inline_label("Valor", 92))
-        input_row.addWidget(self.analog_measured)
-        input_row.addStretch(1)
-        scale_layout.addLayout(input_row)
-
-        button_row = QHBoxLayout()
-        button_row.addStretch(1)
-        button_row.addWidget(self.analog_button)
-        button_row.addStretch(1)
-        scale_layout.addLayout(button_row)
+        scale_layout = self.create_analog_grid(scale_box)
+        scale_layout.addWidget(
+            self.create_inline_label("Range inf", ANALOG_LABEL_WIDTH), 0, 0
+        )
+        scale_layout.addWidget(self.analog_range_inf, 0, 1)
+        scale_layout.addWidget(
+            self.create_inline_label("Range sup", ANALOG_LABEL_WIDTH), 0, 2
+        )
+        scale_layout.addWidget(self.analog_range_sup, 0, 3)
+        scale_layout.addWidget(
+            self.create_inline_label("Entrada", ANALOG_LABEL_WIDTH), 1, 0
+        )
+        scale_layout.addWidget(self.analog_input_mode, 1, 1)
+        scale_layout.addWidget(
+            self.create_inline_label("Valor", ANALOG_LABEL_WIDTH), 1, 2
+        )
+        scale_layout.addWidget(self.analog_measured, 1, 3)
+        scale_layout.addWidget(
+            self.analog_button, 2, 0, 1, 4, Qt.AlignmentFlag.AlignHCenter
+        )
         analog_layout.addWidget(scale_box)
 
         result_box = QGroupBox("Resultado")
@@ -172,13 +178,23 @@ class AnalogPanel(QGroupBox):
         button = QPushButton(text)
         button.setObjectName("compactButton")
         button.setFixedWidth(width)
+        button.setFixedHeight(ANALOG_ROW_HEIGHT)
         return button
 
     def create_inline_label(self, text, width):
         label = QLabel(text)
         label.setObjectName("analogInlineLabel")
         label.setFixedWidth(width)
+        label.setFixedHeight(ANALOG_ROW_HEIGHT)
         return label
+
+    def create_analog_grid(self, parent):
+        layout = QGridLayout(parent)
+        layout.setHorizontalSpacing(8)
+        layout.setVerticalSpacing(7)
+        layout.setContentsMargins(8, 10, 8, 10)
+        layout.setColumnStretch(4, 1)
+        return layout
 
     def calculate_analog(self, show_warning=True):
         try:
@@ -250,29 +266,35 @@ class AnalogPanel(QGroupBox):
 class SostatPanel(QGroupBox):
     def __init__(self):
         super().__init__("Conversão de Pontos SCADA")
+        self.setObjectName("sostatPanel")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setMaximumHeight(166)
         bitbyte_layout = QVBoxLayout(self)
-        bitbyte_layout.setContentsMargins(16, 0, 16, 8)
+        bitbyte_layout.setContentsMargins(8, 0, 8, 8)
         bitbyte_layout.setSpacing(1)
 
         self.entry_input = QLineEdit()
         self.entry_input.setPlaceholderText("Digite PTNO ou BitByte")
         self.entry_input.setObjectName("ptnoInput")
+        self.entry_input.setFixedHeight(SEARCH_ROW_HEIGHT)
         entry_row = QHBoxLayout()
         entry_row.setContentsMargins(0, 0, 0, 0)
         entry_row.setSpacing(8)
         entry_row.addWidget(self.entry_input)
         clear_button = self.createButton("x", self.limpar_valores, entry_row, compact=True)
         clear_button.setFixedWidth(28)
+        clear_button.setFixedHeight(SEARCH_ROW_HEIGHT)
         bitbyte_layout.addLayout(entry_row)
+        bitbyte_layout.addSpacing(5)
 
         self.entry_ptno_bitbyte_resultbox = QLabel("Resultado")
         self.entry_ptno_bitbyte_resultbox.setAlignment(
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         )
         self.entry_ptno_bitbyte_resultbox.setObjectName("ptnoResult")
+        self.entry_ptno_bitbyte_resultbox.setFixedHeight(SUBTITLE_ROW_HEIGHT)
         bitbyte_layout.addWidget(self.entry_ptno_bitbyte_resultbox)
+        bitbyte_layout.addSpacing(5)
 
         buttons_layout = QHBoxLayout()
         buttons_layout.setContentsMargins(0, 0, 0, 0)
@@ -282,12 +304,16 @@ class SostatPanel(QGroupBox):
         bitbyte_button = self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
         ptno_button.setFixedWidth(84)
         bitbyte_button.setFixedWidth(84)
+        ptno_button.setFixedHeight(ANALOG_ROW_HEIGHT)
+        bitbyte_button.setFixedHeight(ANALOG_ROW_HEIGHT)
         buttons_layout.addStretch(1)
         bitbyte_layout.addLayout(buttons_layout)
 
     def createButton(self, text, function, layout, compact=False):
         button = QPushButton(text)
         button.setObjectName("compactButton" if compact else "standardButton")
+        if not compact:
+            button.setFixedHeight(SUBTITLE_ROW_HEIGHT)
         button.clicked.connect(function)
         layout.addWidget(button)
         return button
@@ -353,6 +379,7 @@ class App(QMainWindow):
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar nas tabelas")
         self.search_input.setObjectName("searchInput")
+        self.search_input.setFixedHeight(34)
         search_layout = QHBoxLayout()
         search_layout.setSpacing(8)
         search_layout.addWidget(self.search_input)
@@ -360,6 +387,7 @@ class App(QMainWindow):
             "Ir", self.procurar_geral, search_layout, compact=True
         )
         search_button.setFixedWidth(42)
+        search_button.setFixedHeight(SEARCH_ROW_HEIGHT)
         tables_layout.addLayout(search_layout)
 
         tables_body_layout = QHBoxLayout()
@@ -458,6 +486,8 @@ class App(QMainWindow):
     def createButton(self, text, function, layout, compact=False):
         button = QPushButton(text)
         button.setObjectName("compactButton" if compact else "standardButton")
+        if not compact:
+            button.setFixedHeight(SUBTITLE_ROW_HEIGHT)
         button.clicked.connect(function)
         layout.addWidget(button)
         return button
