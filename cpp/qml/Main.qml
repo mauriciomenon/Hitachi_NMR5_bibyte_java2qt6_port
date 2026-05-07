@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     id: root
-    width: 1220
+    width: 1200
     height: 900
     minimumWidth: 980
     minimumHeight: 820
@@ -56,14 +56,14 @@ ApplicationWindow {
         spacing: 16
 
         ColumnLayout {
-            Layout.preferredWidth: 360
-            Layout.maximumWidth: 360
+            Layout.preferredWidth: 340
+            Layout.maximumWidth: 340
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
             spacing: 8
 
             Text {
-                Layout.preferredWidth: 320
+                Layout.preferredWidth: 300
                 Layout.alignment: Qt.AlignHCenter
                 text: "Conversao de Pontos SCADA"
                 color: "#f1f3f5"
@@ -73,8 +73,8 @@ ApplicationWindow {
             }
 
             ColumnLayout {
-                Layout.preferredWidth: 320
-                Layout.maximumWidth: 320
+                Layout.preferredWidth: 300
+                Layout.maximumWidth: 300
                 spacing: 8
 
                 RowLayout {
@@ -135,7 +135,7 @@ ApplicationWindow {
             }
 
             Text {
-                Layout.preferredWidth: 320
+                Layout.preferredWidth: 300
                 Layout.alignment: Qt.AlignHCenter
                 text: "Conversao Raw Counts - Bias/Scale"
                 color: "#f1f3f5"
@@ -146,8 +146,8 @@ ApplicationWindow {
             }
 
             ColumnLayout {
-                Layout.preferredWidth: 320
-                Layout.maximumWidth: 320
+                Layout.preferredWidth: 300
+                Layout.maximumWidth: 300
                 spacing: 8
 
                 SectionBox {

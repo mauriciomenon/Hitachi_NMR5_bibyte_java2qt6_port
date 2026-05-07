@@ -101,6 +101,7 @@ ColumnLayout {
             }
 
             ListView {
+                id: listView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
@@ -154,7 +155,18 @@ ColumnLayout {
                     }
                 }
 
-                ScrollBar.vertical: ScrollBar {}
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AlwaysOn
+                    width: 8
+                    contentItem: Rectangle {
+                        implicitWidth: 6
+                        radius: 3
+                        color: listView.contentHeight > listView.height + 1 ? "#6f7a84" : "#151719"
+                    }
+                    background: Rectangle {
+                        color: "#151719"
+                    }
+                }
             }
         }
     }
