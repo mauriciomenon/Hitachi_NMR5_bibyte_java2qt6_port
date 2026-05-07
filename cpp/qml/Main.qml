@@ -67,7 +67,8 @@ ApplicationWindow {
             }
 
             ColumnLayout {
-                Layout.fillWidth: true
+                Layout.preferredWidth: 360
+                Layout.maximumWidth: 360
                 spacing: 8
 
                 RowLayout {
@@ -91,13 +92,17 @@ ApplicationWindow {
                     }
                 }
 
-                Label {
+                TextField {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 28
+                    readOnly: true
+                    selectByMouse: true
                     text: pointResult
                     color: "#9aa3ab"
+                    font.pixelSize: 12
                     verticalAlignment: Text.AlignVCenter
                     leftPadding: 12
+                    rightPadding: 12
                     background: Rectangle {
                         color: "#17191b"
                         border.color: "#2f353a"
@@ -109,13 +114,13 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 16
                     Button {
-                        text: "To BitByte"
+                        text: "BitByte"
                         Layout.preferredWidth: 96
                         Layout.preferredHeight: 28
                         onClicked: convertPoint(true)
                     }
                     Button {
-                        text: "To PTNO"
+                        text: "PTNO"
                         Layout.preferredWidth: 96
                         Layout.preferredHeight: 28
                         onClicked: convertPoint(false)
@@ -132,56 +137,82 @@ ApplicationWindow {
             }
 
             ColumnLayout {
-                Layout.fillWidth: true
+                Layout.preferredWidth: 360
+                Layout.maximumWidth: 360
                 spacing: 8
 
                 SectionBox {
                     title: "Valores de corrente do transdutor (mA)"
-                    GridLayout {
-                        anchors.fill: parent
-                        anchors.margins: 18
-                        columns: 4
-                        columnSpacing: 10
-                        rowSpacing: 8
-                        FieldLabel { text: "Limite inferior" }
-                        CalcField { text: limInf; onTextEdited: limInf = text }
-                        FieldLabel { text: "Limite superior" }
-                        CalcField { text: limSup; onTextEdited: limSup = text }
-                        FieldLabel { text: "Valores tipicos:" }
-                        Button { text: "0-20 mA"; Layout.preferredWidth: 84; onClicked: applyPreset("0", "20", "0", "20", "10") }
-                        Item { Layout.preferredWidth: 84 }
-                        Button { text: "4-20 mA"; Layout.preferredWidth: 84; onClicked: applyPreset("4", "20", "0", "10", "5") }
+                    implicitHeight: currentForm.implicitHeight + 54
+                    ColumnLayout {
+                        id: currentForm
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.leftMargin: 12
+                        anchors.topMargin: 18
+                        width: parent.width - 24
+                        spacing: 8
+                        RowLayout {
+                            spacing: 10
+                            FieldLabel { text: "Lim. inferior" }
+                            CalcField { text: limInf; onTextEdited: limInf = text }
+                        }
+                        RowLayout {
+                            spacing: 10
+                            FieldLabel { text: "Lim. superior" }
+                            CalcField { text: limSup; onTextEdited: limSup = text }
+                        }
+                        RowLayout {
+                            spacing: 10
+                            FieldLabel { text: "Faixas:" }
+                            RowLayout {
+                                spacing: 8
+                                Button { text: "0-20 mA"; Layout.preferredWidth: 84; onClicked: applyPreset("0", "20", "0", "20", "10") }
+                                Button { text: "4-20 mA"; Layout.preferredWidth: 84; onClicked: applyPreset("4", "20", "0", "10", "5") }
+                            }
+                        }
                     }
                 }
 
                 SectionBox {
                     title: "Escala do equipamento"
-                    implicitHeight: scaleGrid.implicitHeight + 54
-                    GridLayout {
-                        id: scaleGrid
-                        x: 12
-                        y: 18
+                    implicitHeight: scaleForm.implicitHeight + 54
+                    ColumnLayout {
+                        id: scaleForm
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.leftMargin: 12
+                        anchors.topMargin: 18
                         width: parent.width - 24
-                        columns: 4
-                        columnSpacing: 10
-                        rowSpacing: 8
-                        FieldLabel { text: "Range inf" }
-                        CalcField { text: rangeInf; onTextEdited: rangeInf = text }
-                        FieldLabel { text: "Range sup" }
-                        CalcField { text: rangeSup; onTextEdited: rangeSup = text }
-                        FieldLabel { text: "Entrada" }
-                        ComboBox {
-                            Layout.preferredWidth: 84
-                            Layout.preferredHeight: 30
-                            model: ["Medido", "mA", "INT16", "HEX16"]
-                            currentIndex: model.indexOf(analogMode)
-                            onActivated: analogMode = currentText
+                        spacing: 8
+                        RowLayout {
+                            spacing: 10
+                            FieldLabel { text: "Range inf" }
+                            CalcField { text: rangeInf; onTextEdited: rangeInf = text }
                         }
-                        FieldLabel { text: "Valor" }
-                        CalcField { text: analogValue; onTextEdited: analogValue = text }
+                        RowLayout {
+                            spacing: 10
+                            FieldLabel { text: "Range sup" }
+                            CalcField { text: rangeSup; onTextEdited: rangeSup = text }
+                        }
+                        RowLayout {
+                            spacing: 10
+                            FieldLabel { text: "Entrada" }
+                            ComboBox {
+                                Layout.preferredWidth: 132
+                                Layout.preferredHeight: 30
+                                model: ["Medido", "mA", "INT16", "HEX16"]
+                                currentIndex: model.indexOf(analogMode)
+                                onActivated: analogMode = currentText
+                            }
+                        }
+                        RowLayout {
+                            spacing: 10
+                            FieldLabel { text: "Valor" }
+                            CalcField { text: analogValue; onTextEdited: analogValue = text }
+                        }
                         Button {
                             text: "Calcular"
-                            Layout.columnSpan: 4
                             Layout.alignment: Qt.AlignHCenter
                             Layout.preferredWidth: 84
                             Layout.preferredHeight: 28
@@ -200,44 +231,31 @@ ApplicationWindow {
                         y: 10
                         width: parent.width - 20
                         spacing: 3
-                        RowLayout {
-                            Layout.fillWidth: false
-                            Layout.preferredWidth: 252
-                            ResultValue {
-                                text: analogResult.ok ? analogResult.rawHex : "--"
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: 112
-                                Layout.preferredHeight: 24
-                            }
-                            ResultValue {
-                                text: analogResult.ok ? "INT16 " + analogResult.rawInt : "--"
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: 132
-                                Layout.preferredHeight: 24
-                            }
-                        }
-                        ResultRow { label: "Medido"; value: analogResult.ok ? analogResult.measured : "--" }
+                        ResultRow { label: "Hexa"; value: analogResult.ok ? analogResult.rawHex : "--" }
+                        ResultRow { label: "INT16"; value: analogResult.ok ? analogResult.rawInt : "--" }
+                        ResultRow { label: "Decimal"; value: analogResult.ok ? analogResult.measured : "--" }
                         ResultRow { label: "mA"; value: analogResult.ok ? analogResult.current : "--" }
                         ResultRow { label: "BIAS"; value: analogResult.ok ? analogResult.bias : "--" }
                         ResultRow { label: "SCALE"; value: analogResult.ok ? analogResult.scale : "--" }
-                        ResultRow { label: "INT16"; value: analogResult.ok ? analogResult.rawInt : "--" }
-                        ResultRow { label: "HEX16"; value: analogResult.ok ? analogResult.rawHex : "--" }
+                        TextField {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 30
+                            readOnly: true
+                            selectByMouse: true
+                            horizontalAlignment: Text.AlignRight
+                            leftPadding: 8
+                            rightPadding: 8
+                            font.pixelSize: 12
+                            text: analogResult.ok
+                                ? Number(analogResult.current).toPrecision(4)
+                                    + " mA | " + Number(analogResult.rangePercent).toFixed(1)
+                                    + "% range | " + Number(analogResult.rawPercent).toFixed(1)
+                                    + "% raw"
+                                : analogResult.message
+                            color: analogResult.outOfScale ? "#ffb454" : "#b8c0c7"
+                            background: Rectangle { color: "#1b1e20" }
+                        }
                     }
-                }
-
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 28
-                    text: analogResult.ok
-                        ? Number(analogResult.current).toPrecision(4)
-                            + " mA | " + Number(analogResult.rangePercent).toFixed(1)
-                            + "% range | " + Number(analogResult.rawPercent).toFixed(1)
-                            + "% raw"
-                        : analogResult.message
-                    color: analogResult.outOfScale ? "#ffb454" : "#b8c0c7"
-                    leftPadding: 8
-                    verticalAlignment: Text.AlignVCenter
-                    background: Rectangle { color: "#1b1e20" }
                 }
             }
 

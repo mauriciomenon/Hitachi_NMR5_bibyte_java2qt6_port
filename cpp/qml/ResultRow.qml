@@ -8,19 +8,19 @@ RowLayout {
     property int valueWidth: 132
     Layout.fillWidth: false
     Layout.preferredWidth: labelWidth + valueWidth + spacing
-    Layout.preferredHeight: 24
+    Layout.preferredHeight: 30
     spacing: 8
 
     FieldLabel {
         text: parent.label
         Layout.preferredWidth: parent.labelWidth
-        Layout.preferredHeight: 24
+        Layout.preferredHeight: 30
     }
 
     ResultValue {
         text: parent.value
         Layout.fillWidth: true
         Layout.preferredWidth: parent.valueWidth
-        Layout.preferredHeight: 24
+        Layout.preferredHeight: 30
     }
 }
