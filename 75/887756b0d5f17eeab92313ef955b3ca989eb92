@@ -1,0 +1,61 @@
+cpp/src/AnalogCalculator.cpp
+  6ffe40702933ad3a 1-65
+cpp/qml/ResultValue.qml
+  6ffe40702933ad3a 1-18
+cpp/qml/ResultRow.qml
+  6ffe40702933ad3a 1-19
+cpp/src/TableData.h
+  6ffe40702933ad3a 1-10
+cpp/src/main.cpp
+  6ffe40702933ad3a 1-26
+cpp/src/AppBackend.cpp
+  6ffe40702933ad3a 1-165
+cpp/src/TableProvider.cpp
+  6ffe40702933ad3a 1-71
+cpp/src/AppBackend.h
+  6ffe40702933ad3a 1-30
+cpp/src/PointCalculator.h
+  6ffe40702933ad3a 1-24
+cpp/CMakeLists.txt
+  6ffe40702933ad3a 1-52
+cpp/qml/CalcField.qml
+  6ffe40702933ad3a 1-16
+cpp/src/TableProvider.h
+  6ffe40702933ad3a 1-37
+cpp/README.md
+  6ffe40702933ad3a 1-27
+cpp/src/PointCalculator.cpp
+  6ffe40702933ad3a 1-170
+cpp/qml/DataPanel.qml
+  6ffe40702933ad3a 1-111
+cpp/qml/Main.qml
+  6ffe40702933ad3a 1-286
+cpp/qml/FieldLabel.qml
+  6ffe40702933ad3a 1-15
+cpp/src/TableData.cpp
+  6ffe40702933ad3a 1-124
+cpp/qml/SectionBox.qml
+  6ffe40702933ad3a 1-45
+cpp/src/AnalogCalculator.h
+  6ffe40702933ad3a 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "75887756b0d5f17eeab92313ef955b3ca989eb92",
+  "prompts": {
+    "6ffe40702933ad3a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex",
+      "messages": [],
+      "total_additions": 122186,
+      "total_deletions": 7314,
+      "accepted_lines": 1906,
+      "overriden_lines": 0
+    }
+  }
+}
