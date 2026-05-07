@@ -5,9 +5,9 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: root
     width: 1220
-    height: 680
+    height: 900
     minimumWidth: 980
-    minimumHeight: 620
+    minimumHeight: 820
     visible: true
     title: "IEC-870-5 Unbalanced Mode - Qt/QML"
     color: "#202224"

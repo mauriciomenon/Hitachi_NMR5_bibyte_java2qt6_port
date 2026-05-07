@@ -63,6 +63,7 @@ ColumnLayout {
                 model: rows
 
                 delegate: Row {
+                    id: rowDelegate
                     required property int index
                     required property var modelData
                     width: ListView.view.width
@@ -86,16 +87,21 @@ ColumnLayout {
                     Repeater {
                         model: headers.length
                         Rectangle {
-                            width: widths[index]
+                            property int columnIndex: index
+                            property string columnKey: keys[columnIndex] || ""
+                            width: widths[columnIndex]
                             height: 28
-                            color: (parent.index % 2 === 0) ? "#151719" : "#1b1e20"
+                            color: (rowDelegate.index % 2 === 0) ? "#151719" : "#1b1e20"
 
                             Text {
                                 anchors.fill: parent
                                 anchors.leftMargin: 6
                                 anchors.rightMargin: 4
                                 verticalAlignment: Text.AlignVCenter
-                                text: modelData[keys[index]]
+                                text: rowDelegate.modelData && parent.columnKey.length > 0
+                                    && rowDelegate.modelData[parent.columnKey] !== undefined
+                                    ? String(rowDelegate.modelData[parent.columnKey])
+                                    : ""
                                 color: "#f1f3f5"
                                 font.pixelSize: 12
                                 elide: Text.ElideRight
