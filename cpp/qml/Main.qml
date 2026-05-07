@@ -193,8 +193,8 @@ ApplicationWindow {
                     implicitHeight: 250
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 18
-                        spacing: 6
+                        anchors.margins: 12
+                        spacing: 4
                         RowLayout {
                             Layout.fillWidth: true
                             ResultValue { text: analogResult.ok ? analogResult.rawHex : "--" }

@@ -9,11 +9,10 @@ RowLayout {
 
     FieldLabel {
         text: parent.label
-        Layout.fillWidth: true
+        Layout.preferredHeight: 28
     }
 
     ResultValue {
         text: parent.value
     }
 }
-
