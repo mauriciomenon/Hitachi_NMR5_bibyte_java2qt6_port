@@ -53,7 +53,7 @@ ApplicationWindow {
         anchors.topMargin: 8
         anchors.rightMargin: 12
         anchors.bottomMargin: 8
-        spacing: 16
+        spacing: 8
 
         ColumnLayout {
             Layout.preferredWidth: 340
