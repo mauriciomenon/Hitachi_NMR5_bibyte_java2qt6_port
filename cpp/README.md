@@ -17,6 +17,22 @@ cmake --build build
 ./build/nmr5_qml
 ```
 
+## Validacao local
+
+Rodar os testes de calculo:
+
+```bash
+cd cpp
+ctest --test-dir build --output-on-failure
+```
+
+Verificar o log de inicializacao QML por erros comuns:
+
+```bash
+cd cpp
+./check_runtime_log.sh
+```
+
 ## Build no Windows
 
 Dependencias recomendadas via `winget`:
