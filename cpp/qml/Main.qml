@@ -49,21 +49,21 @@ ApplicationWindow {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 8
+        anchors.leftMargin: 12
         anchors.topMargin: 8
         anchors.rightMargin: 12
         anchors.bottomMargin: 8
-        spacing: 12
+        spacing: 16
 
         ColumnLayout {
-            Layout.preferredWidth: 390
-            Layout.maximumWidth: 390
+            Layout.preferredWidth: 360
+            Layout.maximumWidth: 360
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
             spacing: 8
 
             Text {
-                Layout.preferredWidth: 340
+                Layout.preferredWidth: 320
                 Layout.alignment: Qt.AlignHCenter
                 text: "Conversao de Pontos SCADA"
                 color: "#f1f3f5"
@@ -73,8 +73,8 @@ ApplicationWindow {
             }
 
             ColumnLayout {
-                Layout.preferredWidth: 340
-                Layout.maximumWidth: 340
+                Layout.preferredWidth: 320
+                Layout.maximumWidth: 320
                 spacing: 8
 
                 RowLayout {
@@ -135,7 +135,7 @@ ApplicationWindow {
             }
 
             Text {
-                Layout.preferredWidth: 340
+                Layout.preferredWidth: 320
                 Layout.alignment: Qt.AlignHCenter
                 text: "Conversao Raw Counts - Bias/Scale"
                 color: "#f1f3f5"
@@ -146,8 +146,8 @@ ApplicationWindow {
             }
 
             ColumnLayout {
-                Layout.preferredWidth: 340
-                Layout.maximumWidth: 340
+                Layout.preferredWidth: 320
+                Layout.maximumWidth: 320
                 spacing: 8
 
                 SectionBox {
@@ -312,7 +312,7 @@ ApplicationWindow {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 10
+                spacing: 20
                 DataPanel {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
