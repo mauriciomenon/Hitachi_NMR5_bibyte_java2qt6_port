@@ -267,7 +267,7 @@ ApplicationWindow {
                     title: "Localizacao das UTRs"
                     headers: ["UTR", "SOM", "Logic", "Link", "Localizacao", "Unidade", "Cota [m]", "Eixo"]
                     keys: ["utr", "som", "logic", "link", "localizacao", "unidade", "cota", "eixo"]
-                    widths: [72, 78, 44, 42, 150, 70, 70, 54]
+                    widths: [68, 74, 40, 38, 126, 58, 54, 42]
                     rows: tables.filteredRtuRows
                 }
                 DataPanel {
@@ -277,7 +277,7 @@ ApplicationWindow {
                     title: "Codigo e Cores dos Cabos de UTRs"
                     headers: ["Cor", "P&B", "Par", "Fio", "Anilha", "Cor an."]
                     keys: ["cor", "pb", "par", "fio", "anilha", "corAnilha"]
-                    widths: [86, 68, 44, 44, 76, 70]
+                    widths: [76, 60, 38, 38, 46, 64]
                     rows: tables.filteredCableRows
                 }
             }
