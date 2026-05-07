@@ -1,0 +1,21 @@
+cpp/README.md
+  s_6ffe40702933ad::t_8e4167fe769764 36-46
+cpp/CMakeLists.txt
+  s_6ffe40702933ad::t_8e4167fe769764 5-6,83-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "65be235dc236cae3ea6dac3cdd1176546e3eef79",
+  "prompts": {},
+  "sessions": {
+    "s_6ffe40702933ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex <codex@example.com>"
+    }
+  }
+}
