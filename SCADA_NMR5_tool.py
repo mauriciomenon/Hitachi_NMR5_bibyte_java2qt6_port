@@ -270,7 +270,7 @@ class SostatPanel(QGroupBox):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setMaximumHeight(166)
         bitbyte_layout = QVBoxLayout(self)
-        bitbyte_layout.setContentsMargins(8, 0, 8, 8)
+        bitbyte_layout.setContentsMargins(8, 8, 8, 8)
         bitbyte_layout.setSpacing(1)
 
         self.entry_input = QLineEdit()
@@ -285,7 +285,7 @@ class SostatPanel(QGroupBox):
         clear_button.setFixedWidth(28)
         clear_button.setFixedHeight(SEARCH_ROW_HEIGHT)
         bitbyte_layout.addLayout(entry_row)
-        bitbyte_layout.addSpacing(5)
+        bitbyte_layout.addSpacing(13)
 
         self.entry_ptno_bitbyte_resultbox = QLabel("Resultado")
         self.entry_ptno_bitbyte_resultbox.setAlignment(
