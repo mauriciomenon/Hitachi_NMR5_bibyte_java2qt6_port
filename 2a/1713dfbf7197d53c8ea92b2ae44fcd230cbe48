@@ -1,0 +1,27 @@
+cpp/qml/ResultRow.qml
+  s_6ffe40702933ad::t_d2fa8c8ed4b8fa 11,17,24
+  s_6ffe40702933ad::t_0b775738242d4c 8,23
+  s_6ffe40702933ad::t_55ef4f8268b0fb 7,9-10,16,22
+cpp/qml/Main.qml
+  s_6ffe40702933ad::t_7b0a371ca86aa6 161,194,198
+  s_6ffe40702933ad::t_0038c8ff7b6b60 159,162-164,196,199-201,204-205,208,214
+  s_6ffe40702933ad::t_26772da69f1a16 167,202,206-207,211-213,217
+  s_6ffe40702933ad::t_a9293ef6e12689 209,215
+  s_6ffe40702933ad::t_696f03861e148f 210,216
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "2a1713dfbf7197d53c8ea92b2ae44fcd230cbe48",
+  "prompts": {},
+  "sessions": {
+    "s_6ffe40702933ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex <codex@example.com>"
+    }
+  }
+}
