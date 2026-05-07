@@ -56,6 +56,7 @@ ApplicationWindow {
             Layout.preferredWidth: 410
             Layout.maximumWidth: 410
             Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             spacing: 8
 
             Text {
@@ -223,6 +224,10 @@ ApplicationWindow {
                     verticalAlignment: Text.AlignVCenter
                     background: Rectangle { color: "#1b1e20" }
                 }
+            }
+
+            Item {
+                Layout.fillHeight: true
             }
         }
 
