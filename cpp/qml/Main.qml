@@ -156,13 +156,15 @@ ApplicationWindow {
 
                 SectionBox {
                     title: "Escala do equipamento"
-                    implicitHeight: 164
+                    implicitHeight: scaleGrid.implicitHeight + 54
                     GridLayout {
-                        anchors.fill: parent
-                        anchors.margins: 18
+                        id: scaleGrid
+                        x: 12
+                        y: 18
+                        width: parent.width - 24
                         columns: 4
                         columnSpacing: 10
-                        rowSpacing: 10
+                        rowSpacing: 8
                         FieldLabel { text: "Range inf" }
                         CalcField { text: rangeInf; onTextEdited: rangeInf = text }
                         FieldLabel { text: "Range sup" }
@@ -177,7 +179,6 @@ ApplicationWindow {
                         }
                         FieldLabel { text: "Valor" }
                         CalcField { text: analogValue; onTextEdited: analogValue = text }
-                        Item { Layout.columnSpan: 4; Layout.preferredHeight: 4 }
                         Button {
                             text: "Calcular"
                             Layout.columnSpan: 4
@@ -190,16 +191,30 @@ ApplicationWindow {
                 }
 
                 SectionBox {
+                    id: resultSection
                     title: "Resultado"
-                    implicitHeight: 250
+                    implicitHeight: resultContent.implicitHeight + 38
                     ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 12
-                        spacing: 4
+                        id: resultContent
+                        x: 10
+                        y: 10
+                        width: parent.width - 20
+                        spacing: 3
                         RowLayout {
-                            Layout.fillWidth: true
-                            ResultValue { text: analogResult.ok ? analogResult.rawHex : "--" }
-                            ResultValue { text: analogResult.ok ? "INT16 " + analogResult.rawInt : "--" }
+                            Layout.fillWidth: false
+                            Layout.preferredWidth: 252
+                            ResultValue {
+                                text: analogResult.ok ? analogResult.rawHex : "--"
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: 112
+                                Layout.preferredHeight: 24
+                            }
+                            ResultValue {
+                                text: analogResult.ok ? "INT16 " + analogResult.rawInt : "--"
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: 132
+                                Layout.preferredHeight: 24
+                            }
                         }
                         ResultRow { label: "Medido"; value: analogResult.ok ? analogResult.measured : "--" }
                         ResultRow { label: "mA"; value: analogResult.ok ? analogResult.current : "--" }
