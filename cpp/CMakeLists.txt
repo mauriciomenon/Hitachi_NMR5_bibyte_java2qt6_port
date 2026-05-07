@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.21)
 
 project(NMR5QtQml VERSION 0.1.0 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
@@ -78,3 +80,16 @@ target_link_libraries(nmr5_calculator_tests
 )
 
 add_test(NAME nmr5_calculator_tests COMMAND nmr5_calculator_tests)
+
+install(TARGETS nmr5_qml
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+set(CPACK_PACKAGE_NAME "nmr5-qml")
+set(CPACK_PACKAGE_VENDOR "NMR5")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "NMR5 Qt/QML interface slice")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_GENERATOR "TGZ;ZIP")
+
+include(CPack)

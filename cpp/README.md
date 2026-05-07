@@ -33,6 +33,17 @@ cd cpp
 ./check_runtime_log.sh
 ```
 
+Gerar pacote local do executavel:
+
+```bash
+cd cpp
+cmake --build build --target package
+```
+
+Os arquivos gerados ficam em `cpp/build/`, por exemplo `nmr5-qml-0.1.0-Darwin.tar.gz`
+e `nmr5-qml-0.1.0-Darwin.zip`. Este pacote e um artefato local leve e pressupoe
+Qt disponivel no ambiente onde o executavel sera rodado.
+
 ## Build no Windows
 
 Dependencias recomendadas via `winget`:
