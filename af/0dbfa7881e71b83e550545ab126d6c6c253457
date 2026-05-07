@@ -1,0 +1,21 @@
+cpp/qml/DataPanel.qml
+  s_6ffe40702933ad::t_9b4f91286b2b2d 104,158-169
+cpp/qml/Main.qml
+  s_6ffe40702933ad::t_e5c11f883bcaba 7,59-60,66,76-77,138,149-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "af0dbfa7881e71b83e550545ab126d6c6c253457",
+  "prompts": {},
+  "sessions": {
+    "s_6ffe40702933ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex <codex@example.com>"
+    }
+  }
+}
