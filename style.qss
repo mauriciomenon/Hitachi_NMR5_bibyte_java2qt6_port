@@ -20,7 +20,17 @@ QGroupBox::title {
 }
 
 QGroupBox#sostatPanel {
-    margin-top: 11px;
+    background: #202224;
+    border: 0;
+    border-radius: 0;
+    margin-top: 0;
+    padding: 0;
+}
+
+QGroupBox#sostatPanel::title {
+    subcontrol-origin: margin;
+    left: 0;
+    padding: 0;
 }
 
 QGroupBox#calcSection {
@@ -163,7 +173,7 @@ QPushButton {
 
 QPushButton#compactButton {
     padding: 3px 8px;
-    min-height: 22px;
+    min-height: 20px;
     max-height: 34px;
     font-size: 9px;
     font-weight: 500;

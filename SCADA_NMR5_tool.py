@@ -30,6 +30,7 @@ ANALOG_CONTROL_WIDTH = 84
 ANALOG_ROW_HEIGHT = 30
 SEARCH_ROW_HEIGHT = 34
 SUBTITLE_ROW_HEIGHT = 28
+COMPACT_SUBTITLE_BUTTON_HEIGHT = 26
 
 
 class AnalogPanel(QGroupBox):
@@ -83,9 +84,7 @@ class AnalogPanel(QGroupBox):
         self.preset_4_20.setFixedWidth(ANALOG_CONTROL_WIDTH)
         self.preset_0_20.setFixedHeight(ANALOG_ROW_HEIGHT)
         self.preset_4_20.setFixedHeight(ANALOG_ROW_HEIGHT)
-        self.analog_button = self.create_compact_button(
-            "Calcular", ANALOG_CONTROL_WIDTH
-        )
+        self.analog_button = self.create_compact_button("Calcular", ANALOG_CONTROL_WIDTH)
         self.analog_button.clicked.connect(lambda: self.calculate_analog())
         self.analog_lim_inf.setFixedWidth(ANALOG_CONTROL_WIDTH)
         self.analog_lim_sup.setFixedWidth(ANALOG_CONTROL_WIDTH)
@@ -124,6 +123,7 @@ class AnalogPanel(QGroupBox):
         scale_box = QGroupBox("Escala do equipamento")
         scale_box.setObjectName("calcSection")
         scale_layout = self.create_analog_grid(scale_box)
+        scale_layout.setVerticalSpacing(10)
         scale_layout.addWidget(
             self.create_inline_label("Range inf", ANALOG_LABEL_WIDTH), 0, 0
         )
@@ -174,11 +174,11 @@ class AnalogPanel(QGroupBox):
         analog_layout.addWidget(self.analog_status)
         self.calculate_analog(show_warning=False)
 
-    def create_compact_button(self, text, width):
+    def create_compact_button(self, text, width, height=COMPACT_SUBTITLE_BUTTON_HEIGHT):
         button = QPushButton(text)
         button.setObjectName("compactButton")
         button.setFixedWidth(width)
-        button.setFixedHeight(ANALOG_ROW_HEIGHT)
+        button.setFixedHeight(height)
         return button
 
     def create_inline_label(self, text, width):
@@ -270,7 +270,7 @@ class SostatPanel(QGroupBox):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setMaximumHeight(166)
         bitbyte_layout = QVBoxLayout(self)
-        bitbyte_layout.setContentsMargins(8, 8, 8, 8)
+        bitbyte_layout.setContentsMargins(8, 30, 8, 8)
         bitbyte_layout.setSpacing(1)
 
         self.entry_input = QLineEdit()
@@ -304,8 +304,8 @@ class SostatPanel(QGroupBox):
         bitbyte_button = self.createButton("BitByte", self.calcula_1, buttons_layout, compact=True)
         ptno_button.setFixedWidth(84)
         bitbyte_button.setFixedWidth(84)
-        ptno_button.setFixedHeight(ANALOG_ROW_HEIGHT)
-        bitbyte_button.setFixedHeight(ANALOG_ROW_HEIGHT)
+        ptno_button.setFixedHeight(COMPACT_SUBTITLE_BUTTON_HEIGHT)
+        bitbyte_button.setFixedHeight(COMPACT_SUBTITLE_BUTTON_HEIGHT)
         buttons_layout.addStretch(1)
         bitbyte_layout.addLayout(buttons_layout)
 
