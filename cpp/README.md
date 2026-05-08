@@ -154,11 +154,11 @@ ctest --test-dir build --output-on-failure
 
 ### Pacote local leve
 
-O target `package` gera `.tar.gz` e `.zip` em `cpp/build/`:
+O target `package_pure` gera `.tar.gz` e `.zip` em `cpp/build/`:
 
 ```bash
 cd cpp
-cmake --build build --target package
+cmake --build build --target package_pure
 ```
 
 Exemplos de saida:
@@ -174,35 +174,59 @@ onde o executavel sera rodado.
 
 ### Windows portavel com DLLs Qt
 
-Para uma pasta distribuivel no Windows, gere uma instalacao local e rode
-`windeployqt`:
+Para uma pasta distribuivel no Windows, use o target com Qt:
 
 ```powershell
 cd C:\path\Hitachi_NMR5_bibyte_java2qt6_port\cpp
-cmake --install build --prefix dist\nmr5_qml
-C:\Qt\6.x.x\msvc2022_64\bin\windeployqt.exe --qmldir qml dist\nmr5_qml\bin\nmr5_qml.exe
+cmake --build build --target package_with_qt
 ```
 
-Depois disso, distribuir a pasta `cpp\dist\nmr5_qml`.
+O target roda `scripts\package_windows_qt.ps1`, instala o executavel em uma pasta
+temporaria do build, executa `windeployqt` e gera um ZIP com as DLLs Qt.
 
 ### macOS portavel
 
-O pacote atual nao gera `.app` e nao roda `macdeployqt`. Um distribuivel macOS
-realmente portavel deve ser feito em um proximo slice separado, criando bundle
-`.app` e aplicando `macdeployqt`.
+Para gerar `.app` com Qt embutido:
+
+```bash
+cd cpp
+cmake --build build --target package_with_qt
+```
+
+O target roda `scripts/package_macos_qt.sh`, cria um bundle `.app`, executa
+`macdeployqt` e gera `nmr5-qml-<versao>-macos-with-qt.zip`.
 
 ### Debian e Artix
 
-Para Linux, o pacote CPack atual e adequado para ambiente controlado com Qt
-instalado via gerenciador do sistema. Um distribuivel Linux independente exigiria
-um slice proprio para AppImage, Flatpak ou empacotamento nativo por distro.
+Para Linux, `package_pure` e o caminho recomendado em ambiente controlado com Qt
+instalado via gerenciador do sistema. O target `package_with_qt` usa
+`linuxdeployqt` quando essa ferramenta estiver disponivel:
+
+```bash
+cd cpp
+cmake --build build --target package_with_qt
+```
+
+Gerar ambos quando a ferramenta de deploy da plataforma estiver instalada:
+
+```bash
+cd cpp
+cmake --build build --target package_all
+```
 
 ## Conteudo
 
-- `src/AppBackend.*`: backend C++ para conversao PTNO/BitByte, calculo analogico e dados de tabela.
+- `src/AppBackend.*`: facade C++ exposta ao QML para conversao PTNO/BitByte e calculo analogico.
+- `src/AnalogCalculator.*`: regras analogicas Raw Counts BIAS/SCALE.
+- `src/PointCalculator.*`: regras de conversao PTNO/BitByte.
+- `src/TableData.*`: dados compilados das tabelas de UTRs e cabos.
+- `src/TableProvider.*`: filtro e exposicao das tabelas para QML.
 - `qml/Main.qml`: interface QML com paineis de calculadora e tabelas.
 - `CMakeLists.txt`: projeto Qt 6 com QML module.
 - `check_runtime_log.sh`: smoke test local para erros comuns de runtime QML.
+- `scripts/package_macos_qt.sh`: gera `.app` macOS com Qt embutido.
+- `scripts/package_windows_qt.ps1`: gera ZIP Windows com DLLs Qt.
+- `scripts/package_linux_qt.sh`: gera pacote Linux com `linuxdeployqt`, quando disponivel.
 - `tests/calculator_tests.cpp`: testes QtTest dos calculos principais.
 
 ## Referencias

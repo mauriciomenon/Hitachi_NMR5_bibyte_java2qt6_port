@@ -35,9 +35,18 @@ target_link_libraries(nmr5_calculators
         Qt6::Core
 )
 
-qt_add_executable(nmr5_qml
+add_library(nmr5_backend STATIC
     src/AppBackend.cpp
     src/AppBackend.h
+)
+
+target_link_libraries(nmr5_backend
+    PUBLIC
+        nmr5_calculators
+        Qt6::Core
+)
+
+qt_add_executable(nmr5_qml
     src/main.cpp
     src/TableData.cpp
     src/TableData.h
@@ -60,6 +69,7 @@ qt_add_qml_module(nmr5_qml
 
 target_link_libraries(nmr5_qml
     PRIVATE
+        nmr5_backend
         nmr5_calculators
         Qt6::Core
         Qt6::Gui
@@ -72,13 +82,12 @@ if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
 
     add_executable(nmr5_calculator_tests
-        src/AppBackend.cpp
-        src/AppBackend.h
         tests/calculator_tests.cpp
     )
 
     target_link_libraries(nmr5_calculator_tests
         PRIVATE
+            nmr5_backend
             nmr5_calculators
             Qt6::Test
     )
@@ -98,3 +107,46 @@ set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 set(CPACK_GENERATOR "TGZ;ZIP")
 
 include(CPack)
+
+add_custom_target(package_pure
+    COMMAND ${CMAKE_CPACK_COMMAND} --config "${CMAKE_BINARY_DIR}/CPackConfig.cmake"
+    DEPENDS nmr5_qml
+    COMMENT "Generating pure package without bundled Qt runtime"
+)
+
+if(APPLE)
+    add_custom_target(package_with_qt
+        COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/scripts/package_macos_qt.sh"
+            "$<TARGET_FILE:nmr5_qml>"
+            "${CMAKE_BINARY_DIR}/deploy"
+            "${PROJECT_VERSION}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        DEPENDS nmr5_qml
+        COMMENT "Generating macOS package with bundled Qt runtime"
+    )
+elseif(WIN32)
+    add_custom_target(package_with_qt
+        COMMAND powershell -ExecutionPolicy Bypass -File
+            "${CMAKE_CURRENT_SOURCE_DIR}/scripts/package_windows_qt.ps1"
+            -BuildDir "${CMAKE_BINARY_DIR}"
+            -InstallDir "${CMAKE_BINARY_DIR}/deploy/nmr5_qml"
+            -Version "${PROJECT_VERSION}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        DEPENDS nmr5_qml
+        COMMENT "Generating Windows package with bundled Qt runtime"
+    )
+elseif(UNIX)
+    add_custom_target(package_with_qt
+        COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/scripts/package_linux_qt.sh"
+            "$<TARGET_FILE:nmr5_qml>"
+            "${CMAKE_BINARY_DIR}/deploy"
+            "${PROJECT_VERSION}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        DEPENDS nmr5_qml
+        COMMENT "Generating Linux package with bundled Qt runtime"
+    )
+endif()
+
+add_custom_target(package_all
+    DEPENDS package_pure package_with_qt
+)
