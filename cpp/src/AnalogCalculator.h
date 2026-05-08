@@ -10,7 +10,6 @@ struct AnalogResult {
     double bias = 0.0;
     double scale = 0.0;
     int rawInt = 0;
-    QString rawHex;
     double rangePercent = 0.0;
     double rawPercent = 0.0;
     bool outOfScale = false;
@@ -25,6 +24,8 @@ enum class AnalogInputMode {
 
 class AnalogCalculator final {
 public:
+    static constexpr int RawMax = 32767;
+
     [[nodiscard]] static AnalogResult calculate(
         double limInf,
         double limSup,

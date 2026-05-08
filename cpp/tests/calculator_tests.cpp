@@ -27,6 +27,7 @@ private slots:
     void analogInvalidRanges();
     void backendAnalogModeIds();
     void analogRawBoundaries();
+    void backendAcceptsDotDecimalInput();
     void backendRejectsInvalidRaw();
     void pointBoundaryCases();
     void pointSostat();
@@ -44,7 +45,6 @@ void CalculatorTests::analogMeasuredInput()
     expectNear(result.bias, -2.5, 0.0001);
     expectNear(result.scale, 0.625, 0.0001);
     QCOMPARE(result.rawInt, 16383);
-    QCOMPARE(result.rawHex, QStringLiteral("0x3fff"));
     expectNear(result.rangePercent, 50.0, 0.0001);
     QVERIFY(!result.outOfScale);
 }
@@ -65,7 +65,6 @@ void CalculatorTests::analogRawInput()
     expectNear(result.measured, 4.9998, 0.001);
     expectNear(result.current, 11.9998, 0.001);
     QCOMPARE(result.rawInt, 16383);
-    QCOMPARE(result.rawHex, QStringLiteral("0x3fff"));
 }
 
 void CalculatorTests::analogInvalidRanges()
@@ -120,22 +119,36 @@ void CalculatorTests::analogRawBoundaries()
     expectNear(low.measured, 0.0, 0.0001);
     expectNear(low.current, 4.0, 0.0001);
     QCOMPARE(low.rawInt, 0);
-    QCOMPARE(low.rawHex, QStringLiteral("0x0000"));
     expectNear(low.rawPercent, 0.0, 0.0001);
     QVERIFY(!low.outOfScale);
 
-    const AnalogResult high = AnalogCalculator::calculate(4.0, 20.0, 0.0, 10.0, 32767.0, AnalogInputMode::RawInt16);
+    const AnalogResult high = AnalogCalculator::calculate(
+        4.0, 20.0, 0.0, 10.0, AnalogCalculator::RawMax, AnalogInputMode::RawInt16);
     QVERIFY(high.ok);
     expectNear(high.measured, 10.0, 0.0001);
     expectNear(high.current, 20.0, 0.0001);
-    QCOMPARE(high.rawInt, 32767);
-    QCOMPARE(high.rawHex, QStringLiteral("0x7fff"));
+    QCOMPARE(high.rawInt, AnalogCalculator::RawMax);
     expectNear(high.rawPercent, 100.0, 0.0001);
     QVERIFY(!high.outOfScale);
 
     const AnalogResult out = AnalogCalculator::calculate(4.0, 20.0, 0.0, 10.0, 20.0, AnalogInputMode::Measured);
     QVERIFY(out.ok);
     QVERIFY(out.outOfScale);
+}
+
+void CalculatorTests::backendAcceptsDotDecimalInput()
+{
+    const AppBackend backend;
+    const QVariantMap result = backend.calculateAnalog(
+        QStringLiteral("4.0"),
+        QStringLiteral("20.0"),
+        QStringLiteral("0.0"),
+        QStringLiteral("10.0"),
+        QStringLiteral("5.5"),
+        QStringLiteral("measured"));
+
+    QVERIFY(result.value(QStringLiteral("ok")).toBool());
+    QCOMPARE(result.value(QStringLiteral("rawHex")).toString(), QStringLiteral("0x4665"));
 }
 
 void CalculatorTests::backendRejectsInvalidRaw()
@@ -156,7 +169,7 @@ void CalculatorTests::backendRejectsInvalidRaw()
         QStringLiteral("20"),
         QStringLiteral("0"),
         QStringLiteral("10"),
-        QStringLiteral("32768"),
+        QString::number(AnalogCalculator::RawMax + 1),
         QStringLiteral("raw_int16"));
     QVERIFY(!highInt.value(QStringLiteral("ok")).toBool());
     QCOMPARE(highInt.value(QStringLiteral("message")).toString(), QStringLiteral("Valor raw invalido"));

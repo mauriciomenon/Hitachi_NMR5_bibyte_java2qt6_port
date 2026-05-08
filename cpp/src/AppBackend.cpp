@@ -23,11 +23,16 @@ int parseHex16ToInt(const QString& value, bool* ok)
         text = text.mid(2);
     }
     const int rawValue = text.toInt(ok, 16);
-    if (!*ok || rawValue > 0x7FFF) {
+    if (!*ok || rawValue > AnalogCalculator::RawMax) {
         *ok = false;
         return 0;
     }
     return rawValue;
+}
+
+QString formatRawHex(int rawInt)
+{
+    return QStringLiteral("0x%1").arg(rawInt & 0xFFFF, 4, 16, QLatin1Char('0'));
 }
 
 ParsedAnalogInput parseAnalogInput(
@@ -76,7 +81,7 @@ ParsedAnalogInput parseAnalogInput(
     } else if (inputMode == QStringLiteral("raw_int16")) {
         parsed.mode = AnalogInputMode::RawInt16;
         parsed.inputValue = value.toInt(&ok);
-        if (parsed.inputValue < 0 || parsed.inputValue > 32767) {
+        if (parsed.inputValue < 0 || parsed.inputValue > AnalogCalculator::RawMax) {
             ok = false;
         }
         parsed.error = ok ? QString() : QStringLiteral("Valor raw invalido");
@@ -160,7 +165,7 @@ QVariantMap AppBackend::calculateAnalog(
         {QStringLiteral("bias"), result.bias},
         {QStringLiteral("scale"), result.scale},
         {QStringLiteral("rawInt"), result.rawInt},
-        {QStringLiteral("rawHex"), result.rawHex},
+        {QStringLiteral("rawHex"), formatRawHex(result.rawInt)},
         {QStringLiteral("rangePercent"), result.rangePercent},
         {QStringLiteral("rawPercent"), result.rawPercent},
         {QStringLiteral("outOfScale"), result.outOfScale},
