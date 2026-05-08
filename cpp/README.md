@@ -8,43 +8,46 @@ Versao C++/Qt/QML experimental da interface NMR5.
 - Criar um slice C++ Qt 6 QML isolado em `cpp/`.
 - Validar as calculadoras principais e um layout similar ao app atual.
 
-## Build
+## Requisitos por sistema
+
+### macOS
+
+Instalar Command Line Tools e dependencias via Homebrew:
+
+```bash
+xcode-select --install
+brew install cmake ninja qt
+```
+
+Se `qt-cmake` nao estiver no `PATH`, use o binario do Homebrew:
 
 ```bash
 cd cpp
-qt-cmake -S . -B build
+$(brew --prefix qt)/bin/qt-cmake -S . -B build -G Ninja
 cmake --build build
-./build/nmr5_qml
 ```
 
-## Validacao local
+### Debian
 
-Rodar os testes de calculo:
+Dependencias recomendadas:
 
 ```bash
-cd cpp
-ctest --test-dir build --output-on-failure
+sudo apt update
+sudo apt install build-essential cmake ninja-build qt6-base-dev qt6-declarative-dev qt6-tools-dev-tools
 ```
 
-Verificar o log de inicializacao QML por erros comuns:
+O pacote `qt6-declarative-dev` traz as dependencias Qt Quick/QML usadas pelo app,
+incluindo Quick Controls nas versoes estaveis atuais do Debian.
+
+### Artix
+
+Dependencias recomendadas:
 
 ```bash
-cd cpp
-./check_runtime_log.sh
+sudo pacman -Syu --needed base-devel cmake ninja qt6-base qt6-declarative qt6-tools
 ```
 
-Gerar pacote local do executavel:
-
-```bash
-cd cpp
-cmake --build build --target package
-```
-
-Os arquivos gerados ficam em `cpp/build/`, por exemplo `nmr5-qml-0.1.0-Darwin.tar.gz`
-e `nmr5-qml-0.1.0-Darwin.zip`. Este pacote e um artefato local leve e pressupoe
-Qt disponivel no ambiente onde o executavel sera rodado.
-
-## Build no Windows
+### Windows 11
 
 Dependencias recomendadas via `winget`:
 
@@ -66,7 +69,47 @@ Instalar o Qt pelo Qt Online Installer com:
 - Qt 6.x MSVC 2022 64-bit.
 - Qt Declarative / QML / Quick / QuickControls2.
 
-Build com `qt-cmake.bat`:
+Alternativa para instalar Qt por CLI:
+
+```powershell
+winget install -e --id miurahr.aqtinstall
+aqt list-qt windows desktop
+aqt install-qt windows desktop 6.8.2 win64_msvc2022_64
+```
+
+Use uma versao disponivel na saida de `aqt list-qt` se `6.8.2` nao estiver
+listada.
+
+## Build e execucao
+
+### macOS
+
+```bash
+cd cpp
+qt-cmake -S . -B build -G Ninja
+cmake --build build
+./build/nmr5_qml
+```
+
+Se `qt-cmake` nao estiver no `PATH`:
+
+```bash
+cd cpp
+$(brew --prefix qt)/bin/qt-cmake -S . -B build -G Ninja
+cmake --build build
+./build/nmr5_qml
+```
+
+### Debian e Artix
+
+```bash
+cd cpp
+cmake -S . -B build -G Ninja
+cmake --build build
+./build/nmr5_qml
+```
+
+### Windows 11
 
 ```powershell
 cd C:\path\Hitachi_NMR5_bibyte_java2qt6_port\cpp
@@ -84,20 +127,95 @@ cmake --build build
 .\build\nmr5_qml.exe
 ```
 
-Alternativa para instalar Qt por CLI:
+## Validacao local
 
-```powershell
-winget install -e --id miurahr.aqtinstall
-aqt list-qt windows desktop
+Rodar os testes de calculo:
+
+```bash
+cd cpp
+ctest --test-dir build --output-on-failure
 ```
 
-Depois de escolher a versao disponivel, instalar o alvo `win64_msvc2022_64`.
+Verificar o log de inicializacao QML por erros comuns:
+
+```bash
+cd cpp
+./check_runtime_log.sh
+```
+
+No Windows:
+
+```powershell
+cd C:\path\Hitachi_NMR5_bibyte_java2qt6_port\cpp
+ctest --test-dir build --output-on-failure
+```
+
+## Gerar distribuivel
+
+### Pacote local leve
+
+O target `package` gera `.tar.gz` e `.zip` em `cpp/build/`:
+
+```bash
+cd cpp
+cmake --build build --target package
+```
+
+Exemplos de saida:
+
+- `cpp/build/nmr5-qml-0.1.0-Darwin.tar.gz`
+- `cpp/build/nmr5-qml-0.1.0-Darwin.zip`
+- `cpp/build/nmr5-qml-0.1.0-Linux.tar.gz`
+- `cpp/build/nmr5-qml-0.1.0-Linux.zip`
+- `cpp/build/nmr5-qml-0.1.0-win64.zip`
+
+Este pacote e um artefato local leve. Ele pressupoe que Qt ja existe no ambiente
+onde o executavel sera rodado.
+
+### Windows portavel com DLLs Qt
+
+Para uma pasta distribuivel no Windows, gere uma instalacao local e rode
+`windeployqt`:
+
+```powershell
+cd C:\path\Hitachi_NMR5_bibyte_java2qt6_port\cpp
+cmake --install build --prefix dist\nmr5_qml
+C:\Qt\6.x.x\msvc2022_64\bin\windeployqt.exe --qmldir qml dist\nmr5_qml\bin\nmr5_qml.exe
+```
+
+Depois disso, distribuir a pasta `cpp\dist\nmr5_qml`.
+
+### macOS portavel
+
+O pacote atual nao gera `.app` e nao roda `macdeployqt`. Um distribuivel macOS
+realmente portavel deve ser feito em um proximo slice separado, criando bundle
+`.app` e aplicando `macdeployqt`.
+
+### Debian e Artix
+
+Para Linux, o pacote CPack atual e adequado para ambiente controlado com Qt
+instalado via gerenciador do sistema. Um distribuivel Linux independente exigiria
+um slice proprio para AppImage, Flatpak ou empacotamento nativo por distro.
 
 ## Conteudo
 
 - `src/AppBackend.*`: backend C++ para conversao PTNO/BitByte, calculo analogico e dados de tabela.
 - `qml/Main.qml`: interface QML com paineis de calculadora e tabelas.
 - `CMakeLists.txt`: projeto Qt 6 com QML module.
+- `check_runtime_log.sh`: smoke test local para erros comuns de runtime QML.
+- `tests/calculator_tests.cpp`: testes QtTest dos calculos principais.
+
+## Referencias
+
+- Qt CMake command line: https://doc.qt.io/qt-6/cmake-build-on-cmdline.html
+- Qt Windows deployment: https://doc.qt.io/qt-6/windows-deployment.html
+- Qt macOS deployment: https://doc.qt.io/qt-6/macos-deployment.html
+- Apple Command Line Tools: https://developer.apple.com/documentation/xcode/installing-the-command-line-tools/
+- Homebrew Qt: https://formulae.brew.sh/formula/qt
+- Debian `qt6-declarative-dev`: https://packages.debian.org/stable/qt6-declarative-dev
+- Artix `qt6-base`: https://packages.artixlinux.org/packages/world/x86_64/qt6-base/
+- Artix `qt6-declarative`: https://packages.artixlinux.org/packages/world/x86_64/qt6-declarative/
+- Microsoft winget: https://learn.microsoft.com/windows/package-manager/winget/
 
 ## Notas de layout
 
