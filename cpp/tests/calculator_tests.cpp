@@ -28,6 +28,7 @@ private slots:
     void backendAnalogModeIds();
     void analogRawBoundaries();
     void backendAcceptsDotDecimalInput();
+    void backendAcceptsCommaDecimalInput();
     void backendRejectsInvalidRaw();
     void pointBoundaryCases();
     void pointSostat();
@@ -81,6 +82,10 @@ void CalculatorTests::analogInvalidRanges()
 void CalculatorTests::backendAnalogModeIds()
 {
     const AppBackend backend;
+    const QVariantList modeOptions = backend.analogModeOptions();
+    QCOMPARE(modeOptions.size(), 4);
+    QCOMPARE(modeOptions.first().toMap().value(QStringLiteral("mode")).toString(), backend.analogModeMeasured());
+
     const QVariantMap measured = backend.calculateAnalog(
         QStringLiteral("4"),
         QStringLiteral("20"),
@@ -146,6 +151,21 @@ void CalculatorTests::backendAcceptsDotDecimalInput()
         QStringLiteral("10.0"),
         QStringLiteral("5.5"),
         QStringLiteral("measured"));
+
+    QVERIFY(result.value(QStringLiteral("ok")).toBool());
+    QCOMPARE(result.value(QStringLiteral("rawHex")).toString(), QStringLiteral("0x4665"));
+}
+
+void CalculatorTests::backendAcceptsCommaDecimalInput()
+{
+    const AppBackend backend;
+    const QVariantMap result = backend.calculateAnalog(
+        QStringLiteral("4,0"),
+        QStringLiteral("20,0"),
+        QStringLiteral("0,0"),
+        QStringLiteral("10,0"),
+        QStringLiteral("5,5"),
+        backend.analogModeMeasured());
 
     QVERIFY(result.value(QStringLiteral("ok")).toBool());
     QCOMPARE(result.value(QStringLiteral("rawHex")).toString(), QStringLiteral("0x4665"));

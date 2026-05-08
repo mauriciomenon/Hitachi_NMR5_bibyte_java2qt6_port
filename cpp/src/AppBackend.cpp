@@ -16,6 +16,22 @@ struct ParsedAnalogInput {
     AnalogInputMode mode = AnalogInputMode::Measured;
 };
 
+namespace AnalogModeId {
+const QString measured = QStringLiteral("measured");
+const QString currentMa = QStringLiteral("current_ma");
+const QString rawInt16 = QStringLiteral("raw_int16");
+const QString rawHex16 = QStringLiteral("raw_hex16");
+} // namespace AnalogModeId
+
+double parseDecimal(const QString& value, bool* ok)
+{
+    QString text = value.trimmed();
+    if (text.contains(QLatin1Char(',')) && !text.contains(QLatin1Char('.'))) {
+        text.replace(QLatin1Char(','), QLatin1Char('.'));
+    }
+    return text.toDouble(ok);
+}
+
 int parseHex16ToInt(const QString& value, bool* ok)
 {
     QString text = value.trimmed().toLower();
@@ -45,40 +61,40 @@ ParsedAnalogInput parseAnalogInput(
 {
     ParsedAnalogInput parsed;
     bool ok = false;
-    parsed.limInf = limInf.toDouble(&ok);
+    parsed.limInf = parseDecimal(limInf, &ok);
     if (!ok) {
         parsed.error = QStringLiteral("Limite inferior invalido");
         return parsed;
     }
-    parsed.limSup = limSup.toDouble(&ok);
+    parsed.limSup = parseDecimal(limSup, &ok);
     if (!ok) {
         parsed.error = QStringLiteral("Limite superior invalido");
         return parsed;
     }
-    parsed.rangeInf = rangeInf.toDouble(&ok);
+    parsed.rangeInf = parseDecimal(rangeInf, &ok);
     if (!ok) {
         parsed.error = QStringLiteral("Range inferior invalido");
         return parsed;
     }
-    parsed.rangeSup = rangeSup.toDouble(&ok);
+    parsed.rangeSup = parseDecimal(rangeSup, &ok);
     if (!ok) {
         parsed.error = QStringLiteral("Range superior invalido");
         return parsed;
     }
 
-    if (inputMode == QStringLiteral("measured")) {
+    if (inputMode == AnalogModeId::measured) {
         parsed.mode = AnalogInputMode::Measured;
-        parsed.inputValue = value.toDouble(&ok);
+        parsed.inputValue = parseDecimal(value, &ok);
         parsed.error = ok ? QString() : QStringLiteral("Valor medido invalido");
-    } else if (inputMode == QStringLiteral("current_ma")) {
+    } else if (inputMode == AnalogModeId::currentMa) {
         parsed.mode = AnalogInputMode::CurrentMa;
-        parsed.inputValue = value.toDouble(&ok);
+        parsed.inputValue = parseDecimal(value, &ok);
         parsed.error = ok ? QString() : QStringLiteral("Valor mA invalido");
-    } else if (inputMode == QStringLiteral("raw_hex16")) {
+    } else if (inputMode == AnalogModeId::rawHex16) {
         parsed.mode = AnalogInputMode::RawHex16;
         parsed.inputValue = parseHex16ToInt(value, &ok);
         parsed.error = ok ? QString() : QStringLiteral("Valor raw invalido");
-    } else if (inputMode == QStringLiteral("raw_int16")) {
+    } else if (inputMode == AnalogModeId::rawInt16) {
         parsed.mode = AnalogInputMode::RawInt16;
         parsed.inputValue = value.toInt(&ok);
         if (parsed.inputValue < 0 || parsed.inputValue > AnalogCalculator::RawMax) {
@@ -98,6 +114,21 @@ ParsedAnalogInput parseAnalogInput(
 AppBackend::AppBackend(QObject* parent)
     : QObject(parent)
 {
+}
+
+QString AppBackend::analogModeMeasured() const
+{
+    return AnalogModeId::measured;
+}
+
+QVariantList AppBackend::analogModeOptions() const
+{
+    return {
+        QVariantMap{{QStringLiteral("label"), QStringLiteral("Medido")}, {QStringLiteral("mode"), AnalogModeId::measured}},
+        QVariantMap{{QStringLiteral("label"), QStringLiteral("mA")}, {QStringLiteral("mode"), AnalogModeId::currentMa}},
+        QVariantMap{{QStringLiteral("label"), QStringLiteral("INT16")}, {QStringLiteral("mode"), AnalogModeId::rawInt16}},
+        QVariantMap{{QStringLiteral("label"), QStringLiteral("HEX16")}, {QStringLiteral("mode"), AnalogModeId::rawHex16}},
+    };
 }
 
 QVariantMap AppBackend::makeError(const QString& message)

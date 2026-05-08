@@ -10,10 +10,14 @@ enum class AnalogInputMode;
 
 class AppBackend final : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString analogModeMeasured READ analogModeMeasured CONSTANT)
 
 public:
     explicit AppBackend(QObject* parent = nullptr);
 
+    [[nodiscard]] QString analogModeMeasured() const;
+
+    Q_INVOKABLE QVariantList analogModeOptions() const;
     Q_INVOKABLE QVariantMap bitbyteFromPtno(const QString& value) const;
     Q_INVOKABLE QVariantMap ptnoFromBitbyte(const QString& value) const;
     Q_INVOKABLE QVariantMap calculateAnalog(

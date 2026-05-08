@@ -18,10 +18,11 @@ ApplicationWindow {
     property string limSup: "20"
     property string rangeInf: "0"
     property string rangeSup: "10"
-    property string analogMode: "measured"
+    property string analogMode: backend.analogModeMeasured
     property string analogValue: "5"
     property var analogResult: ({})
     property string searchDraft: ""
+    property var analogModeOptions: backend.analogModeOptions()
 
     Component.onCompleted: calculateAnalog()
 
@@ -39,8 +40,8 @@ ApplicationWindow {
     }
 
     function analogModeIndex() {
-        for (var i = 0; i < analogModeModel.count; i += 1) {
-            if (analogModeModel.get(i).mode === analogMode) {
+        for (var i = 0; i < analogModeOptions.length; i += 1) {
+            if (analogModeOptions[i].mode === analogMode) {
                 return i
             }
         }
@@ -54,14 +55,6 @@ ApplicationWindow {
             return
         }
         pointResult = result.display
-    }
-
-    ListModel {
-        id: analogModeModel
-        ListElement { label: "Medido"; mode: "measured" }
-        ListElement { label: "mA"; mode: "current_ma" }
-        ListElement { label: "INT16"; mode: "raw_int16" }
-        ListElement { label: "HEX16"; mode: "raw_hex16" }
     }
 
     RowLayout {
@@ -227,10 +220,10 @@ ApplicationWindow {
                             ComboBox {
                                 Layout.preferredWidth: 132
                                 Layout.preferredHeight: 30
-                                model: analogModeModel
+                                model: analogModeOptions
                                 textRole: "label"
                                 currentIndex: analogModeIndex()
-                                onActivated: analogMode = analogModeModel.get(index).mode
+                                onActivated: analogMode = analogModeOptions[index].mode
                             }
                         }
                         RowLayout {
