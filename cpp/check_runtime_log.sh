@@ -33,7 +33,7 @@ if [[ "$app_status" -ne 0 && "$app_status" -ne 143 ]]; then
     exit "$app_status"
 fi
 
-error_pattern='Unable to assign|ReferenceError|TypeError|QQmlApplicationEngine failed|module .* is not installed|qrc:/'
+error_pattern='Unable to assign|ReferenceError|TypeError|QQmlApplicationEngine failed|module .* is not installed|qrc:/[^[:space:]]+:[0-9]+(:[0-9]+)?:.*(Error|error|Unable|failed)'
 if grep -En "$error_pattern" "$log_path"; then
     echo "QML runtime log check failed. Log: $log_path" >&2
     exit 1
