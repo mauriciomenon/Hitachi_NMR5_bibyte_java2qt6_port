@@ -5,8 +5,8 @@
 
 class TableProvider final : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QVariantList rtuRows READ rtuRows CONSTANT)
-    Q_PROPERTY(QVariantList cableRows READ cableRows CONSTANT)
+    Q_PROPERTY(QVariantList rtuRows READ rtuRows NOTIFY rowsChanged)
+    Q_PROPERTY(QVariantList cableRows READ cableRows NOTIFY rowsChanged)
     Q_PROPERTY(QVariantList filteredRtuRows READ filteredRtuRows NOTIFY rowsChanged)
     Q_PROPERTY(QVariantList filteredCableRows READ filteredCableRows NOTIFY rowsChanged)
     Q_PROPERTY(QString searchText READ searchText WRITE setSearchText NOTIFY searchTextChanged)
@@ -30,8 +30,16 @@ private:
     QVariantList cableRows_;
     QVariantList filteredRtuRows_;
     QVariantList filteredCableRows_;
+    QStringList rtuSearchIndex_;
+    QStringList cableSearchIndex_;
     QString searchText_;
 
+    void loadExternalRows();
+    void rebuildSearchIndexes();
     void refreshFilteredRows();
-    [[nodiscard]] static QVariantList filterRows(const QVariantList& rows, const QString& searchText);
+    [[nodiscard]] static QStringList searchIndex(const QVariantList& rows);
+    [[nodiscard]] static QVariantList filterRows(
+        const QVariantList& rows,
+        const QStringList& index,
+        const QString& searchText);
 };

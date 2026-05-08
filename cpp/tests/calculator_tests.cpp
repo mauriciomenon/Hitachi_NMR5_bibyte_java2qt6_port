@@ -1,8 +1,12 @@
 #include "AnalogCalculator.h"
 #include "AppBackend.h"
 #include "PointCalculator.h"
+#include "TableData.h"
 
 #include <QtTest/QtTest>
+
+#include <QTemporaryDir>
+#include <QFile>
 
 #include <cmath>
 
@@ -35,6 +39,7 @@ private slots:
     void pointDigital();
     void pointBlock();
     void pointPseudoAndInvalidText();
+    void tableDataLoadsCsvRows();
 };
 
 void CalculatorTests::analogMeasuredInput()
@@ -310,6 +315,37 @@ void CalculatorTests::pointPseudoAndInvalidText()
     const PointResult invalid = PointCalculator::bitbyteFromPtno(QStringLiteral("abc"));
     QVERIFY(!invalid.ok);
     QCOMPARE(invalid.message, QStringLiteral("Entrada invalida"));
+}
+
+void CalculatorTests::tableDataLoadsCsvRows()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString rtuPath = tempDir.filePath(QStringLiteral("rtu_rows.csv"));
+    QFile rtuFile(rtuPath);
+    QVERIFY(rtuFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    rtuFile.write("utr,som,logic,link,localizacao,unidade,cota,eixo\n");
+    rtuFile.write("UTR999,Z99R01,99,88,Teste,U99,123,A-B\n");
+    rtuFile.close();
+
+    QString error;
+    const QVariantList rows = TableData::rtuRowsFromCsv(rtuPath, &error);
+    QCOMPARE(error, QString());
+    QCOMPARE(rows.size(), 1);
+    const QVariantMap row = rows.first().toMap();
+    QCOMPARE(row.value(QStringLiteral("utr")).toString(), QStringLiteral("UTR999"));
+    QCOMPARE(row.value(QStringLiteral("text")).toString(), QStringLiteral("utr999 z99r01 99 88 teste u99 123 a-b"));
+
+    const QString badPath = tempDir.filePath(QStringLiteral("bad.csv"));
+    QFile badFile(badPath);
+    QVERIFY(badFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    badFile.write("wrong,header\n");
+    badFile.close();
+
+    const QVariantList invalidRows = TableData::rtuRowsFromCsv(badPath, &error);
+    QVERIFY(invalidRows.isEmpty());
+    QCOMPARE(error, QStringLiteral("Cabecalho CSV invalido"));
 }
 
 QTEST_APPLESS_MAIN(CalculatorTests)

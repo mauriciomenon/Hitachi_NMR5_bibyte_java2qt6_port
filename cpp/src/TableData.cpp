@@ -1,7 +1,11 @@
 #include "TableData.h"
 
+#include <QFile>
 #include <QString>
+#include <QTextStream>
 #include <QVariantMap>
+
+#include <functional>
 
 namespace {
 
@@ -51,6 +55,98 @@ QVariantMap makeCableRow(
         {QStringLiteral("corAnilha"), corAnilha},
         {QStringLiteral("text"), text},
     };
+}
+
+QStringList splitCsvLine(const QString& line)
+{
+    QStringList fields;
+    QString field;
+    bool quoted = false;
+    for (qsizetype i = 0; i < line.size(); ++i) {
+        const QChar ch = line.at(i);
+        if (ch == QLatin1Char('"')) {
+            if (quoted && i + 1 < line.size() && line.at(i + 1) == QLatin1Char('"')) {
+                field.append(ch);
+                ++i;
+            } else {
+                quoted = !quoted;
+            }
+        } else if (ch == QLatin1Char(',') && !quoted) {
+            fields.append(field.trimmed());
+            field.clear();
+        } else {
+            field.append(ch);
+        }
+    }
+    fields.append(field.trimmed());
+    return fields;
+}
+
+bool validateHeader(const QStringList& actual, const QStringList& expected)
+{
+    if (actual.size() != expected.size()) {
+        return false;
+    }
+    for (qsizetype i = 0; i < actual.size(); ++i) {
+        if (actual.at(i) != expected.at(i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+QVariantList rowsFromCsv(
+    const QString& filePath,
+    const QStringList& expectedHeader,
+    const std::function<QVariantMap(const QStringList&)>& makeRow,
+    QString* error)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (error != nullptr) {
+            *error = file.errorString();
+        }
+        return {};
+    }
+
+    QTextStream stream(&file);
+    if (stream.atEnd()) {
+        if (error != nullptr) {
+            *error = QStringLiteral("CSV vazio");
+        }
+        return {};
+    }
+
+    const QStringList header = splitCsvLine(stream.readLine());
+    if (!validateHeader(header, expectedHeader)) {
+        if (error != nullptr) {
+            *error = QStringLiteral("Cabecalho CSV invalido");
+        }
+        return {};
+    }
+
+    QVariantList rows;
+    int lineNumber = 1;
+    while (!stream.atEnd()) {
+        ++lineNumber;
+        const QString line = stream.readLine();
+        if (line.trimmed().isEmpty()) {
+            continue;
+        }
+        const QStringList fields = splitCsvLine(line);
+        if (fields.size() != expectedHeader.size()) {
+            if (error != nullptr) {
+                *error = QStringLiteral("Linha CSV invalida: %1").arg(lineNumber);
+            }
+            return {};
+        }
+        rows.append(makeRow(fields));
+    }
+
+    if (rows.isEmpty() && error != nullptr) {
+        *error = QStringLiteral("CSV sem dados");
+    }
+    return rows;
 }
 
 } // namespace
@@ -121,4 +217,50 @@ QVariantList TableData::cableRows()
         makeCableRow("Verde", "Preto", "11", "35", "III", "Rosa"),
         makeCableRow("Marrom", "Branco", "11", "36", "III", "Rosa"),
     };
+}
+
+QVariantList TableData::rtuRowsFromCsv(const QString& filePath, QString* error)
+{
+    static const QStringList expectedHeader{
+        QStringLiteral("utr"),
+        QStringLiteral("som"),
+        QStringLiteral("logic"),
+        QStringLiteral("link"),
+        QStringLiteral("localizacao"),
+        QStringLiteral("unidade"),
+        QStringLiteral("cota"),
+        QStringLiteral("eixo"),
+    };
+    return rowsFromCsv(filePath, expectedHeader, [](const QStringList& fields) {
+        return makeRtuRow(
+            fields.at(0),
+            fields.at(1),
+            fields.at(2),
+            fields.at(3),
+            fields.at(4),
+            fields.at(5),
+            fields.at(6),
+            fields.at(7));
+    }, error);
+}
+
+QVariantList TableData::cableRowsFromCsv(const QString& filePath, QString* error)
+{
+    static const QStringList expectedHeader{
+        QStringLiteral("cor"),
+        QStringLiteral("pb"),
+        QStringLiteral("par"),
+        QStringLiteral("fio"),
+        QStringLiteral("anilha"),
+        QStringLiteral("corAnilha"),
+    };
+    return rowsFromCsv(filePath, expectedHeader, [](const QStringList& fields) {
+        return makeCableRow(
+            fields.at(0),
+            fields.at(1),
+            fields.at(2),
+            fields.at(3),
+            fields.at(4),
+            fields.at(5));
+    }, error);
 }

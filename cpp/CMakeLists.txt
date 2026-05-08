@@ -54,6 +54,13 @@ qt_add_executable(nmr5_qml
     src/TableProvider.h
 )
 
+qt_add_resources(nmr5_qml table_data
+    PREFIX "/"
+    FILES
+        data/rtu_rows.csv
+        data/cable_rows.csv
+)
+
 qt_add_qml_module(nmr5_qml
     URI NMR5
     VERSION 1.0
@@ -82,6 +89,8 @@ if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
 
     add_executable(nmr5_calculator_tests
+        src/TableData.cpp
+        src/TableData.h
         tests/calculator_tests.cpp
     )
 
@@ -98,6 +107,11 @@ endif()
 install(TARGETS nmr5_qml
     BUNDLE DESTINATION .
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(DIRECTORY data/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/nmr5-qml/data
+    FILES_MATCHING PATTERN "*.csv"
 )
 
 set(CPACK_PACKAGE_NAME "nmr5-qml")
