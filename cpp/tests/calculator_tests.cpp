@@ -26,6 +26,9 @@ private slots:
     void analogRawInput();
     void analogInvalidRanges();
     void backendAnalogModeIds();
+    void analogRawBoundaries();
+    void backendRejectsInvalidRaw();
+    void pointBoundaryCases();
     void pointSostat();
     void pointDigital();
     void pointBlock();
@@ -108,6 +111,102 @@ void CalculatorTests::backendAnalogModeIds()
         QStringLiteral("Medido"));
     QVERIFY(!invalid.value(QStringLiteral("ok")).toBool());
     QCOMPARE(invalid.value(QStringLiteral("message")).toString(), QStringLiteral("Modo analogico invalido"));
+}
+
+void CalculatorTests::analogRawBoundaries()
+{
+    const AnalogResult low = AnalogCalculator::calculate(4.0, 20.0, 0.0, 10.0, 0.0, AnalogInputMode::RawInt16);
+    QVERIFY(low.ok);
+    expectNear(low.measured, 0.0, 0.0001);
+    expectNear(low.current, 4.0, 0.0001);
+    QCOMPARE(low.rawInt, 0);
+    QCOMPARE(low.rawHex, QStringLiteral("0x0000"));
+    expectNear(low.rawPercent, 0.0, 0.0001);
+    QVERIFY(!low.outOfScale);
+
+    const AnalogResult high = AnalogCalculator::calculate(4.0, 20.0, 0.0, 10.0, 32767.0, AnalogInputMode::RawInt16);
+    QVERIFY(high.ok);
+    expectNear(high.measured, 10.0, 0.0001);
+    expectNear(high.current, 20.0, 0.0001);
+    QCOMPARE(high.rawInt, 32767);
+    QCOMPARE(high.rawHex, QStringLiteral("0x7fff"));
+    expectNear(high.rawPercent, 100.0, 0.0001);
+    QVERIFY(!high.outOfScale);
+
+    const AnalogResult out = AnalogCalculator::calculate(4.0, 20.0, 0.0, 10.0, 20.0, AnalogInputMode::Measured);
+    QVERIFY(out.ok);
+    QVERIFY(out.outOfScale);
+}
+
+void CalculatorTests::backendRejectsInvalidRaw()
+{
+    const AppBackend backend;
+    const QVariantMap highHex = backend.calculateAnalog(
+        QStringLiteral("4"),
+        QStringLiteral("20"),
+        QStringLiteral("0"),
+        QStringLiteral("10"),
+        QStringLiteral("0x8000"),
+        QStringLiteral("raw_hex16"));
+    QVERIFY(!highHex.value(QStringLiteral("ok")).toBool());
+    QCOMPARE(highHex.value(QStringLiteral("message")).toString(), QStringLiteral("Valor raw invalido"));
+
+    const QVariantMap highInt = backend.calculateAnalog(
+        QStringLiteral("4"),
+        QStringLiteral("20"),
+        QStringLiteral("0"),
+        QStringLiteral("10"),
+        QStringLiteral("32768"),
+        QStringLiteral("raw_int16"));
+    QVERIFY(!highInt.value(QStringLiteral("ok")).toBool());
+    QCOMPARE(highInt.value(QStringLiteral("message")).toString(), QStringLiteral("Valor raw invalido"));
+}
+
+void CalculatorTests::pointBoundaryCases()
+{
+    const PointResult sostatMax = PointCalculator::bitbyteFromPtno(QStringLiteral("2047"));
+    QVERIFY(sostatMax.ok);
+    QCOMPARE(sostatMax.value, 10240);
+    const PointResult sostatMaxReverse = PointCalculator::ptnoFromBitbyte(QStringLiteral("10240"));
+    QVERIFY(sostatMaxReverse.ok);
+    QCOMPARE(sostatMaxReverse.value, 2047);
+
+    const PointResult digitalMax = PointCalculator::bitbyteFromPtno(QStringLiteral("11023"));
+    QVERIFY(digitalMax.ok);
+    QCOMPARE(digitalMax.value, 2046);
+    const PointResult digitalMaxReverse = PointCalculator::ptnoFromBitbyte(QStringLiteral("2046"));
+    QVERIFY(digitalMaxReverse.ok);
+    QCOMPARE(digitalMaxReverse.value, 11023);
+
+    const PointResult digitalAnalogMin = PointCalculator::bitbyteFromPtno(QStringLiteral("15000"));
+    QVERIFY(digitalAnalogMin.ok);
+    QCOMPARE(digitalAnalogMin.value, 2048);
+    const PointResult digitalAnalogMax = PointCalculator::bitbyteFromPtno(QStringLiteral("16023"));
+    QVERIFY(digitalAnalogMax.ok);
+    QCOMPARE(digitalAnalogMax.value, 4094);
+    const PointResult digitalAnalogOdd = PointCalculator::ptnoFromBitbyte(QStringLiteral("2049"));
+    QVERIFY(!digitalAnalogOdd.ok);
+
+    const PointResult block2Max = PointCalculator::bitbyteFromPtno(QStringLiteral("36063"));
+    QVERIFY(block2Max.ok);
+    QCOMPARE(block2Max.value, 5751);
+    const PointResult block2Reverse = PointCalculator::ptnoFromBitbyte(QStringLiteral("5751"));
+    QVERIFY(block2Reverse.ok);
+    QCOMPARE(block2Reverse.value, 36063);
+
+    const PointResult block3Min = PointCalculator::bitbyteFromPtno(QStringLiteral("36088"));
+    QVERIFY(block3Min.ok);
+    QCOMPARE(block3Min.value, 5808);
+    const PointResult block3Max = PointCalculator::bitbyteFromPtno(QStringLiteral("36095"));
+    QVERIFY(block3Max.ok);
+    QCOMPARE(block3Max.value, 5815);
+
+    const PointResult pseudoMax = PointCalculator::bitbyteFromPtno(QStringLiteral("51192"));
+    QVERIFY(pseudoMax.ok);
+    QCOMPARE(pseudoMax.value, 8192);
+    const PointResult pseudoMaxReverse = PointCalculator::ptnoFromBitbyte(QStringLiteral("8192"));
+    QVERIFY(pseudoMaxReverse.ok);
+    QCOMPARE(pseudoMaxReverse.value, 51192);
 }
 
 void CalculatorTests::pointSostat()
