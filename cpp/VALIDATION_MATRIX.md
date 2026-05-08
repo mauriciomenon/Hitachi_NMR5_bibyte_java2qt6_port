@@ -28,6 +28,7 @@ qt-cmake -S . -B build
 cmake --build build
 ctest --test-dir build --output-on-failure
 ./check_runtime_log.sh
+./check_visual_smoke_macos.sh
 cmake --build build --target package_pure
 cmake --build build --target package_with_qt
 cmake --build build --target package_all

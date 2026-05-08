@@ -143,6 +143,13 @@ cd cpp
 ./check_runtime_log.sh
 ```
 
+Capturar uma imagem macOS para revisao visual antes de alterar layout:
+
+```bash
+cd cpp
+./check_visual_smoke_macos.sh
+```
+
 No Windows:
 
 ```powershell
@@ -224,6 +231,7 @@ cmake --build build --target package_all
 - `qml/Main.qml`: interface QML com paineis de calculadora e tabelas.
 - `CMakeLists.txt`: projeto Qt 6 com QML module.
 - `check_runtime_log.sh`: smoke test local para erros comuns de runtime QML.
+- `check_visual_smoke_macos.sh`: captura visual macOS para revisao manual da janela atual.
 - `scripts/package_macos_qt.sh`: gera `.app` macOS com Qt embutido.
 - `scripts/package_windows_qt.ps1`: gera ZIP Windows com DLLs Qt.
 - `scripts/package_linux_qt.sh`: gera pacote Linux com `linuxdeployqt`, quando disponivel.

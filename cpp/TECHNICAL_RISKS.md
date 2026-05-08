@@ -23,7 +23,7 @@ posicoes de secoes sem checagem visual contra o baseline aprovado em
 
 | Area | Risco | Mitigacao atual |
 | --- | --- | --- |
-| Layout QML | Medidas pixel-tuned podem regredir em outro DPI, fonte ou plataforma. | Manter baseline QML aprovado e evitar edicoes de layout sem screenshots. |
+| Layout QML | Medidas pixel-tuned podem regredir em outro DPI, fonte ou plataforma. | Manter baseline QML aprovado, capturar screenshot e revisar visualmente antes de edicoes de layout. |
 | Larguras de tabela | Pesos de coluna sao manuais e a ultima coluna absorve a sobra. | Alterar proporcoes de tabela somente com revisao visual. |
 | Contrato do modo analogico | QML envia ids em string para C++. | Labels estao desacoplados dos ids, e testes cobrem os ids aceitos. |
 | Faixa raw analogica | Equipamento com outra faixa raw calcularia valores errados. | Maximo raw centralizado em `AnalogCalculator::RawMax`. |
@@ -34,7 +34,7 @@ posicoes de secoes sem checagem visual contra o baseline aprovado em
 
 ## Ordem preferida para hardening futuro
 
-1. Adicionar checagens visuais por screenshot antes de tocar no layout de novo.
+1. Capturar screenshot e revisar visualmente antes de tocar no layout de novo.
 2. Validar constantes PTNO/BitByte contra fonte Java ou documentacao operacional.
 3. Decidir se a faixa raw precisa virar configuracao.
 4. Mover dados de tabela para arquivo versionado com validacao de schema.
