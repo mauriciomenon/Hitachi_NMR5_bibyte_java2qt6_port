@@ -20,6 +20,8 @@ qt_standard_project_setup()
 add_library(nmr5_calculators STATIC
     src/AnalogCalculator.cpp
     src/AnalogCalculator.h
+    src/AppBackend.cpp
+    src/AppBackend.h
     src/PointCalculator.cpp
     src/PointCalculator.h
 )
@@ -35,8 +37,6 @@ target_link_libraries(nmr5_calculators
 )
 
 qt_add_executable(nmr5_qml
-    src/AppBackend.cpp
-    src/AppBackend.h
     src/main.cpp
     src/TableData.cpp
     src/TableData.h

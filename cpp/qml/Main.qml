@@ -18,7 +18,7 @@ ApplicationWindow {
     property string limSup: "20"
     property string rangeInf: "0"
     property string rangeSup: "10"
-    property string analogMode: "Medido"
+    property string analogMode: "measured"
     property string analogValue: "5"
     property var analogResult: ({})
     property string searchDraft: ""
@@ -38,6 +38,15 @@ ApplicationWindow {
         calculateAnalog()
     }
 
+    function analogModeIndex() {
+        for (var i = 0; i < analogModeModel.count; i += 1) {
+            if (analogModeModel.get(i).mode === analogMode) {
+                return i
+            }
+        }
+        return 0
+    }
+
     function convertPoint(toBitbyte) {
         var result = toBitbyte ? backend.bitbyteFromPtno(pointInput) : backend.ptnoFromBitbyte(pointInput)
         if (!result.ok) {
@@ -45,6 +54,14 @@ ApplicationWindow {
             return
         }
         pointResult = result.display
+    }
+
+    ListModel {
+        id: analogModeModel
+        ListElement { label: "Medido"; mode: "measured" }
+        ListElement { label: "mA"; mode: "current_ma" }
+        ListElement { label: "INT16"; mode: "raw_int16" }
+        ListElement { label: "HEX16"; mode: "raw_hex16" }
     }
 
     RowLayout {
@@ -210,9 +227,10 @@ ApplicationWindow {
                             ComboBox {
                                 Layout.preferredWidth: 132
                                 Layout.preferredHeight: 30
-                                model: ["Medido", "mA", "INT16", "HEX16"]
-                                currentIndex: model.indexOf(analogMode)
-                                onActivated: analogMode = currentText
+                                model: analogModeModel
+                                textRole: "label"
+                                currentIndex: analogModeIndex()
+                                onActivated: analogMode = analogModeModel.get(index).mode
                             }
                         }
                         RowLayout {

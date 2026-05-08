@@ -1,4 +1,5 @@
 #include "AnalogCalculator.h"
+#include "AppBackend.h"
 #include "PointCalculator.h"
 
 #include <QtTest/QtTest>
@@ -24,6 +25,7 @@ private slots:
     void analogCurrentInput();
     void analogRawInput();
     void analogInvalidRanges();
+    void backendAnalogModeIds();
     void pointSostat();
     void pointDigital();
     void pointBlock();
@@ -72,6 +74,40 @@ void CalculatorTests::analogInvalidRanges()
     const AnalogResult currentResult = AnalogCalculator::calculate(4.0, 4.0, 0.0, 10.0, 5.0, AnalogInputMode::Measured);
     QVERIFY(!currentResult.ok);
     QCOMPARE(currentResult.error, QStringLiteral("Limites de corrente invalidos"));
+}
+
+void CalculatorTests::backendAnalogModeIds()
+{
+    const AppBackend backend;
+    const QVariantMap measured = backend.calculateAnalog(
+        QStringLiteral("4"),
+        QStringLiteral("20"),
+        QStringLiteral("0"),
+        QStringLiteral("10"),
+        QStringLiteral("5"),
+        QStringLiteral("measured"));
+    QVERIFY(measured.value(QStringLiteral("ok")).toBool());
+    QCOMPARE(measured.value(QStringLiteral("rawHex")).toString(), QStringLiteral("0x3fff"));
+
+    const QVariantMap current = backend.calculateAnalog(
+        QStringLiteral("4"),
+        QStringLiteral("20"),
+        QStringLiteral("0"),
+        QStringLiteral("10"),
+        QStringLiteral("12"),
+        QStringLiteral("current_ma"));
+    QVERIFY(current.value(QStringLiteral("ok")).toBool());
+    QCOMPARE(current.value(QStringLiteral("rawInt")).toInt(), 16383);
+
+    const QVariantMap invalid = backend.calculateAnalog(
+        QStringLiteral("4"),
+        QStringLiteral("20"),
+        QStringLiteral("0"),
+        QStringLiteral("10"),
+        QStringLiteral("5"),
+        QStringLiteral("Medido"));
+    QVERIFY(!invalid.value(QStringLiteral("ok")).toBool());
+    QCOMPARE(invalid.value(QStringLiteral("message")).toString(), QStringLiteral("Modo analogico invalido"));
 }
 
 void CalculatorTests::pointSostat()

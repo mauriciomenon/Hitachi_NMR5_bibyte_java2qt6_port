@@ -61,25 +61,28 @@ ParsedAnalogInput parseAnalogInput(
         return parsed;
     }
 
-    if (inputMode == QStringLiteral("Medido")) {
+    if (inputMode == QStringLiteral("measured")) {
         parsed.mode = AnalogInputMode::Measured;
         parsed.inputValue = value.toDouble(&ok);
         parsed.error = ok ? QString() : QStringLiteral("Valor medido invalido");
-    } else if (inputMode == QStringLiteral("mA")) {
+    } else if (inputMode == QStringLiteral("current_ma")) {
         parsed.mode = AnalogInputMode::CurrentMa;
         parsed.inputValue = value.toDouble(&ok);
         parsed.error = ok ? QString() : QStringLiteral("Valor mA invalido");
-    } else if (inputMode == QStringLiteral("HEX16")) {
+    } else if (inputMode == QStringLiteral("raw_hex16")) {
         parsed.mode = AnalogInputMode::RawHex16;
         parsed.inputValue = parseHex16ToInt(value, &ok);
         parsed.error = ok ? QString() : QStringLiteral("Valor raw invalido");
-    } else {
+    } else if (inputMode == QStringLiteral("raw_int16")) {
         parsed.mode = AnalogInputMode::RawInt16;
         parsed.inputValue = value.toInt(&ok);
         if (parsed.inputValue < 0 || parsed.inputValue > 32767) {
             ok = false;
         }
         parsed.error = ok ? QString() : QStringLiteral("Valor raw invalido");
+    } else {
+        parsed.error = QStringLiteral("Modo analogico invalido");
+        return parsed;
     }
     parsed.ok = ok;
     return parsed;
