@@ -150,6 +150,20 @@ cd cpp
 ./check_visual_smoke_macos.sh
 ```
 
+## Temas
+
+O tema padrao e `Escuro`, que preserva as cores aprovadas do layout atual.
+Os temas disponiveis ficam no menu `Tema` da propria janela:
+
+- `Escuro`
+- `Claro`
+- `Gruvbox`
+- `Dracula`
+
+Novos temas devem alterar somente tokens de cor em `qml/Theme.qml`. Nao use
+variavel de ambiente, flags de linha de comando ou ajustes de largura/altura
+para trocar tema.
+
 No Windows:
 
 ```powershell
@@ -229,6 +243,7 @@ cmake --build build --target package_all
 - `src/TableData.*`: dados compilados das tabelas de UTRs e cabos.
 - `src/TableProvider.*`: filtro e exposicao das tabelas para QML.
 - `qml/Main.qml`: interface QML com paineis de calculadora e tabelas.
+- `qml/Theme.qml`: tokens de cor e selecao interna dos temas da interface.
 - `CMakeLists.txt`: projeto Qt 6 com QML module.
 - `check_runtime_log.sh`: smoke test local para erros comuns de runtime QML.
 - `check_visual_smoke_macos.sh`: captura visual macOS para revisao manual da janela atual.

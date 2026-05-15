@@ -25,6 +25,7 @@ posicoes de secoes sem checagem visual contra o baseline aprovado em
 | --- | --- | --- |
 | Layout QML | Medidas pixel-tuned podem regredir em outro DPI, fonte ou plataforma. | Manter baseline QML aprovado, capturar screenshot e revisar visualmente antes de edicoes de layout. |
 | Larguras de tabela | Pesos de coluna sao manuais e a ultima coluna absorve a sobra. | Alterar proporcoes de tabela somente com revisao visual. |
+| Temas QML | Tema pode virar refatoracao de layout se misturar cores com medidas. | Trocar tema somente via tokens em `Theme.qml`, sem alterar larguras, alturas ou posicoes. |
 | Contrato do modo analogico | QML envia ids em string para C++. | Labels estao desacoplados dos ids, e testes cobrem os ids aceitos. |
 | Faixa raw analogica | Equipamento com outra faixa raw calcularia valores errados. | Maximo raw centralizado em `AnalogCalculator::RawMax`. |
 | Regras PTNO/BitByte | Intervalos e offsets de dominio sao constantes internas. | Testes de borda cobrem as faixas recuperadas. |
@@ -35,7 +36,8 @@ posicoes de secoes sem checagem visual contra o baseline aprovado em
 ## Ordem preferida para hardening futuro
 
 1. Capturar screenshot e revisar visualmente antes de tocar no layout de novo.
-2. Validar constantes PTNO/BitByte contra fonte Java ou documentacao operacional.
-3. Decidir se a faixa raw precisa virar configuracao.
-4. Validar CSVs de UTR/cabos em Windows e Linux, mantendo fallback compilado.
-5. Trocar contratos QML por interface mais tipada somente se a API crescer.
+2. Validar temas novos em Windows e Linux antes de considerar baseline multiplataforma.
+3. Validar constantes PTNO/BitByte contra fonte Java ou documentacao operacional.
+4. Decidir se a faixa raw precisa virar configuracao.
+5. Validar CSVs de UTR/cabos em Windows e Linux, mantendo fallback compilado.
+6. Trocar contratos QML por interface mais tipada somente se a API crescer.
