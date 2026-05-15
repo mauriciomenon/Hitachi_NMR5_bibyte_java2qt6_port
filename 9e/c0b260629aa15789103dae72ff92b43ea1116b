@@ -1,0 +1,33 @@
+cpp/qml/SectionBox.qml
+  s_6ffe40702933ad::t_a7e7fc0cf77a23 13-14,23,31
+cpp/qml/ResultValue.qml
+  s_6ffe40702933ad::t_3997fb77c89925 10,17-18
+cpp/qml/DataPanel.qml
+  s_6ffe40702933ad::t_51df40449c591c 65-66,80-81,89-90,95,120-121,126,139,150,164,167
+cpp/CMakeLists.txt
+  s_6ffe40702933ad::t_d4e545384957da 21-22,77
+cpp/qml/Main.qml
+  s_6ffe40702933ad::t_97ff6b0b989eb7 13-20,36-65,116,154,160-161,188,318-319,337
+cpp/qml/CalcField.qml
+  s_6ffe40702933ad::t_21c799254a8326 9,15-16
+cpp/qml/FieldLabel.qml
+  s_6ffe40702933ad::t_59d8574c502f07 8,13
+cpp/qml/Theme.qml
+  s_6ffe40702933ad::t_be84f605fb42a2 1-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "9ec0b260629aa15789103dae72ff92b43ea1116b",
+  "prompts": {},
+  "sessions": {
+    "s_6ffe40702933ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex <codex@example.com>"
+    }
+  }
+}
