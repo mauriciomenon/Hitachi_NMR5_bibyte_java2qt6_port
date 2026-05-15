@@ -346,6 +346,23 @@ void CalculatorTests::tableDataLoadsCsvRows()
     const QVariantList invalidRows = TableData::rtuRowsFromCsv(badPath, &error);
     QVERIFY(invalidRows.isEmpty());
     QCOMPARE(error, QStringLiteral("Cabecalho CSV invalido"));
+
+    error.clear();
+    const QVariantList missingRows = TableData::cableRowsFromCsv(tempDir.filePath(QStringLiteral("missing.csv")), &error);
+    QVERIFY(missingRows.isEmpty());
+    QVERIFY(!error.isEmpty());
+
+    const QString shortPath = tempDir.filePath(QStringLiteral("short.csv"));
+    QFile shortFile(shortPath);
+    QVERIFY(shortFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    shortFile.write("cor,pb,par,fio,anilha,corAnilha\n");
+    shortFile.write("Azul,Preto,1,11,I\n");
+    shortFile.close();
+
+    error.clear();
+    const QVariantList shortRows = TableData::cableRowsFromCsv(shortPath, &error);
+    QVERIFY(shortRows.isEmpty());
+    QCOMPARE(error, QStringLiteral("Linha CSV invalida: 2"));
 }
 
 QTEST_APPLESS_MAIN(CalculatorTests)
