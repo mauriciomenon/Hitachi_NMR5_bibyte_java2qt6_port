@@ -1,0 +1,19 @@
+cpp/tests/calculator_tests.cpp
+  s_6ffe40702933ad::t_0242a4b4da2d63 349-365
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "1264047e4b50b85bebb8934335f24b9f0ffde314",
+  "prompts": {},
+  "sessions": {
+    "s_6ffe40702933ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex <codex@example.com>"
+    }
+  }
+}
