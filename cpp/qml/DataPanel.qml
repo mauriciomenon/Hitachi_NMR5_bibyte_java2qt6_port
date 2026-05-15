@@ -62,8 +62,8 @@ ColumnLayout {
         id: tableFrame
         Layout.fillWidth: true
         Layout.fillHeight: true
-        color: "#151719"
-        border.color: "#343a40"
+        color: Theme.colors.tableBg
+        border.color: Theme.colors.tableBorder
         onWidthChanged: panel.recalculateColumnWidths()
 
         ColumnLayout {
@@ -77,8 +77,8 @@ ColumnLayout {
                 Rectangle {
                     width: panel.indexWidth
                     height: parent.height
-                    color: "#2f3438"
-                    border.color: "#4c535a"
+                    color: Theme.colors.tableHeaderBg
+                    border.color: Theme.colors.tableHeaderBorder
                 }
 
                 Repeater {
@@ -86,13 +86,13 @@ ColumnLayout {
                     Rectangle {
                         width: panel.columnPixelWidth(index)
                         height: 32
-                        color: "#2f3438"
-                        border.color: "#4c535a"
+                        color: Theme.colors.tableHeaderBg
+                        border.color: Theme.colors.tableHeaderBorder
 
                         Text {
                             anchors.centerIn: parent
                             text: headers[index]
-                            color: "#f1f3f5"
+                            color: Theme.colors.text
                             font.pixelSize: 10
                             font.bold: true
                         }
@@ -117,13 +117,13 @@ ColumnLayout {
                     Rectangle {
                         width: panel.indexWidth
                         height: 28
-                        color: "#2f3438"
-                        border.color: "#4c535a"
+                        color: Theme.colors.tableHeaderBg
+                        border.color: Theme.colors.tableHeaderBorder
 
                         Text {
                             anchors.centerIn: parent
                             text: index + 1
-                            color: "#f1f3f5"
+                            color: Theme.colors.text
                             font.pixelSize: 10
                             font.bold: true
                         }
@@ -136,7 +136,7 @@ ColumnLayout {
                             property string columnKey: keys[columnIndex] || ""
                             width: panel.columnPixelWidth(columnIndex)
                             height: 28
-                            color: (rowDelegate.index % 2 === 0) ? "#151719" : "#1b1e20"
+                            color: (rowDelegate.index % 2 === 0) ? Theme.colors.rowEven : Theme.colors.rowOdd
 
                             Text {
                                 anchors.fill: parent
@@ -147,7 +147,7 @@ ColumnLayout {
                                     && rowDelegate.modelData[parent.columnKey] !== undefined
                                     ? String(rowDelegate.modelData[parent.columnKey])
                                     : ""
-                                color: "#f1f3f5"
+                                color: Theme.colors.text
                                 font.pixelSize: 12
                                 elide: Text.ElideRight
                             }
@@ -161,10 +161,10 @@ ColumnLayout {
                     contentItem: Rectangle {
                         implicitWidth: 6
                         radius: 3
-                        color: listView.contentHeight > listView.height + 1 ? "#6f7a84" : "#151719"
+                        color: listView.contentHeight > listView.height + 1 ? Theme.colors.scrollbar : Theme.colors.tableBg
                     }
                     background: Rectangle {
-                        color: "#151719"
+                        color: Theme.colors.tableBg
                     }
                 }
             }

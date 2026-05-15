@@ -5,11 +5,10 @@ import QtQuick.Layouts
 Label {
     Layout.preferredWidth: 86
     Layout.preferredHeight: 30
-    color: "#e1e5e9"
+    color: Theme.colors.labelText
     font.pixelSize: 10
     font.bold: true
     leftPadding: 8
     verticalAlignment: Text.AlignVCenter
-    background: Rectangle { color: "#1b1e20" }
+    background: Rectangle { color: Theme.colors.labelBg }
 }
-

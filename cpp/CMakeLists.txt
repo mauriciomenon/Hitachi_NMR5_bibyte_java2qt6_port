@@ -18,6 +18,8 @@ endif()
 
 qt_standard_project_setup()
 
+set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+
 add_library(nmr5_calculators STATIC
     src/AnalogCalculator.cpp
     src/AnalogCalculator.h
@@ -72,6 +74,7 @@ qt_add_qml_module(nmr5_qml
         qml/ResultRow.qml
         qml/ResultValue.qml
         qml/SectionBox.qml
+        qml/Theme.qml
 )
 
 target_link_libraries(nmr5_qml

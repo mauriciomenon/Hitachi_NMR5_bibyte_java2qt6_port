@@ -10,7 +10,14 @@ ApplicationWindow {
     minimumHeight: 820
     visible: true
     title: "IEC-870-5 Unbalanced Mode - Qt/QML"
-    color: "#202224"
+    color: Theme.colors.window
+    palette.window: Theme.colors.window
+    palette.base: Theme.colors.inputBg
+    palette.text: Theme.colors.text
+    palette.button: Theme.colors.buttonBg
+    palette.buttonText: Theme.colors.text
+    palette.placeholderText: Theme.colors.mutedText
+    palette.highlight: Theme.colors.accent
 
     property string pointInput: ""
     property string pointResult: "Resultado"
@@ -25,6 +32,36 @@ ApplicationWindow {
     property var analogModeOptions: backend.analogModeOptions()
 
     Component.onCompleted: calculateAnalog()
+
+    menuBar: MenuBar {
+        Menu {
+            title: "Tema"
+            Action {
+                text: "Escuro"
+                checkable: true
+                checked: Theme.currentName === "dark"
+                onTriggered: Theme.setTheme("dark")
+            }
+            Action {
+                text: "Claro"
+                checkable: true
+                checked: Theme.currentName === "light"
+                onTriggered: Theme.setTheme("light")
+            }
+            Action {
+                text: "Gruvbox"
+                checkable: true
+                checked: Theme.currentName === "gruvbox"
+                onTriggered: Theme.setTheme("gruvbox")
+            }
+            Action {
+                text: "Dracula"
+                checkable: true
+                checked: Theme.currentName === "dracula"
+                onTriggered: Theme.setTheme("dracula")
+            }
+        }
+    }
 
     function calculateAnalog() {
         analogResult = backend.calculateAnalog(limInf, limSup, rangeInf, rangeSup, analogValue, analogMode)
@@ -76,7 +113,7 @@ ApplicationWindow {
                 Layout.preferredWidth: 300
                 Layout.alignment: Qt.AlignHCenter
                 text: "Conversao de Pontos SCADA"
-                color: "#f1f3f5"
+                color: Theme.colors.text
                 font.pixelSize: 16
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
@@ -114,14 +151,14 @@ ApplicationWindow {
                     readOnly: true
                     selectByMouse: true
                     text: pointResult
-                    color: "#9aa3ab"
+                    color: Theme.colors.mutedText
                     font.pixelSize: 12
                     verticalAlignment: Text.AlignVCenter
                     leftPadding: 12
                     rightPadding: 12
                     background: Rectangle {
-                        color: "#17191b"
-                        border.color: "#2f353a"
+                        color: Theme.colors.readOnlyBg
+                        border.color: Theme.colors.readOnlyBorder
                         radius: 4
                     }
                 }
@@ -148,7 +185,7 @@ ApplicationWindow {
                 Layout.preferredWidth: 300
                 Layout.alignment: Qt.AlignHCenter
                 text: "Conversao Raw Counts - Bias/Scale"
-                color: "#f1f3f5"
+                color: Theme.colors.text
                 font.pixelSize: 16
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
@@ -278,8 +315,8 @@ ApplicationWindow {
                                     + "% range | " + Number(analogResult.rawPercent).toFixed(1)
                                     + "% raw"
                                 : analogResult.message
-                            color: analogResult.outOfScale ? "#ffb454" : "#b8c0c7"
-                            background: Rectangle { color: "#1b1e20" }
+                            color: analogResult.outOfScale ? Theme.colors.warning : Theme.colors.summaryText
+                            background: Rectangle { color: Theme.colors.labelBg }
                         }
                     }
                 }
@@ -297,7 +334,7 @@ ApplicationWindow {
 
             Text {
                 text: "Localizacao das UTRs"
-                color: "#f1f3f5"
+                color: Theme.colors.text
                 font.pixelSize: 16
                 font.bold: true
             }

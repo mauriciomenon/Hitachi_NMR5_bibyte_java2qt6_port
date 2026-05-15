@@ -10,8 +10,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         anchors.topMargin: 8
-        color: "#2b2e31"
-        border.color: "#d5d8db"
+        color: Theme.colors.sectionBg
+        border.color: Theme.colors.inputBorder
         radius: 2
     }
 
@@ -20,7 +20,7 @@ Item {
         y: 0
         width: sectionTitle.width + 8
         height: sectionTitle.height
-        color: "#2b2e31"
+        color: Theme.colors.sectionBg
     }
 
     Text {
@@ -28,7 +28,7 @@ Item {
         x: 24
         y: 0
         text: parent.title
-        color: "#f1f3f5"
+        color: Theme.colors.text
         font.pixelSize: 12
         font.bold: true
         padding: 4
