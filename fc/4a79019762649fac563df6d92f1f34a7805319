@@ -1,0 +1,21 @@
+cpp/TECHNICAL_RISKS.md
+  s_6ffe40702933ad::t_5d7dc56177d83c 28,39-43
+cpp/README.md
+  s_6ffe40702933ad::t_3f5f4166aa9d90 153-166,246
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "fc4a79019762649fac563df6d92f1f34a7805319",
+  "prompts": {},
+  "sessions": {
+    "s_6ffe40702933ad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df626-6771-7e03-84ce-128d2fe16fa2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Codex <codex@example.com>"
+    }
+  }
+}
